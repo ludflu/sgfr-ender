@@ -16,11 +16,8 @@ import Prelude hiding (getContents, (!!))
 
 (!!) = genericIndex
 
--- main :: IO ()
--- main = putStrLn "Hello, Haskell!"
-
 kifu :: Diagram B
-kifu = exampleGrid 19 19
+kifu = exampleGrid 18 18
 
 main :: IO ()
 -- main = renderPDF "output.pdf" (dims2D 200 200) myDiagram
