@@ -61,19 +61,19 @@ getCoords move = case move of
   Pass -> Nothing
   Play p -> Just p
 
-addColors :: [m] -> [(Color, m)]  
+addColors :: [m] -> [(Color, m)]
 addColors moves = let moveCount = length moves
-                      colors = concat $ take moveCount $ repeat [Data.SGF.Black,Data.SGF.White]
-                   in zipWith (,) colors moves
+                      colors = concat $ replicate moveCount [Data.SGF.Black,Data.SGF.White]
+                   in zip colors moves
 
 renderReady :: [MoveGo] -> [(Color, (Integer,Integer))]
-renderReady moves = let moves' = catMaybes $ map getCoords moves
+renderReady moves = let moves' = mapMaybe getCoords moves
                       in addColors moves'
 
 readSgf :: FilePath -> IO [MoveGo]
-readSgf path = do 
+readSgf path = do
   rawSgfData <- readFile path
-  let sgfData = BSU.fromString rawSgfData 
+  let sgfData = BSU.fromString rawSgfData
   return $ parse sgfData
 
-  
+
