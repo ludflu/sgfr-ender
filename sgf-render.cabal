@@ -51,6 +51,7 @@ executable sgf-render
                       bytestring,
                       kifu,
                       diagrams-svg,
+                      diagrams-rasterific,
                       diagrams-core,
                       diagrams-lib
 
