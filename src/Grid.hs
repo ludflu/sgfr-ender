@@ -2,10 +2,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Grid where
--- import           Diagrams.Backend.Rasterific (B)
 import           Diagrams.TwoD.Grid
 import           Diagrams.TwoD.Text
--- import Diagrams.TwoD (circle)
 import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc, lw, none, opacity, red, black, white,
                                      (#))
