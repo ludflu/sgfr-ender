@@ -53,7 +53,8 @@ executable sgf-render
                       diagrams-svg,
                       diagrams-rasterific,
                       diagrams-core,
-                      diagrams-lib
+                      diagrams-lib,
+                      utf8-string
 
 
     hs-source-dirs:   app

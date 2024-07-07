@@ -4,7 +4,9 @@
 
 module Main where
 
-import Data.ByteString (ByteString, getContents, unpack)
+import Data.ByteString (ByteString, getContents, pack, unpack)
+-- import qualified Data.ByteString.Lazy.UTF8 as BLU
+import qualified Data.ByteString.UTF8 as BSU
 import Data.List hiding ((!!))
 import Data.SGF
 import Data.Tree
@@ -18,9 +20,6 @@ import Prelude hiding (getContents, (!!))
 
 kifu :: Diagram B
 kifu = exampleGrid 18 18
-
-main :: IO ()
-main = renderPdf 200 200 "output.pdf" (dims2D 200 200) kifu
 
 grabTree :: [Word8] -> TreeGo
 grabTree s = case runParser collection () "stdin" s of
@@ -55,4 +54,12 @@ showMoves = unlines . showMoves' 1
     showMoves' n [m] = unwords [show n ++ ".", showMove m] : []
     showMoves' n (m : m' : ms) = unwords [show n ++ ".", showMove m, showMove m'] : showMoves' (n + 2) ms
 
--- main = renderSVG "output.svg" (dims2D 200 200) kifu
+-- main :: IO ()
+-- main = renderPdf 200 200 "output.pdf" (dims2D 200 200) kifu
+
+main :: IO ()
+main = do
+  f <- readFile "65761210-307-mannesmann-ludflu215.sgf"
+  let fs = BSU.fromString f
+
+  putStrLn $ showMoves (parse fs)
