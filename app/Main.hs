@@ -11,7 +11,7 @@ import Data.List hiding ((!!))
 import Data.SGF
 import Data.Tree
 import Diagrams.Backend.Rasterific
-import Diagrams.Backend.SVG hiding (B)
+-- import Diagrams.Backend.SVG hiding (B)
 import Diagrams.Prelude hiding (Point, pad)
 import Grid (exampleGrid)
 import Prelude hiding (getContents, (!!))
@@ -37,8 +37,12 @@ parse = grabMoves . grabTree . unpack
 coordinates :: [Char]
 coordinates = delete 'I' ['A' .. 'Z']
 
+-- showPoint :: Point -> String
+-- showPoint (x, y) = coordinates !! x : show (19 - y)
+
 showPoint :: Point -> String
-showPoint (x, y) = coordinates !! x : show (19 - y)
+showPoint (x, y) = show x ++ "," ++ show y--coordinates !! x : show (19 - y)
+
 
 pad :: String -> String
 pad s = s ++ replicate (4 - length s) ' '
@@ -54,12 +58,11 @@ showMoves = unlines . showMoves' 1
     showMoves' n [m] = unwords [show n ++ ".", showMove m] : []
     showMoves' n (m : m' : ms) = unwords [show n ++ ".", showMove m, showMove m'] : showMoves' (n + 2) ms
 
--- main :: IO ()
--- main = renderPdf 200 200 "output.pdf" (dims2D 200 200) kifu
-
 main :: IO ()
-main = do
-  f <- readFile "65761210-307-mannesmann-ludflu215.sgf"
-  let fs = BSU.fromString f
+main = renderPdf 200 200 "output.pdf" (dims2D 200 200) kifu
 
-  putStrLn $ showMoves (parse fs)
+-- main :: IO ()
+-- main = do
+--   f <- readFile "65761210-307-mannesmann-ludflu215.sgf"
+--   let fs = BSU.fromString f
+--   putStrLn $ showMoves (parse fs)
