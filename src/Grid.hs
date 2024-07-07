@@ -15,23 +15,14 @@ import Data.SGF
 cSize :: Double
 cSize = 0.03
 
--- bndPts :: [a] -> Diagram B -> Diagram B
+transformMovetoBoard :: (Integer, Integer) -> (Int,Int)
+transformMovetoBoard (x',y') = let x = fromIntegral x'
+                                   y = fromIntegral y' 
+                                in ((x*2)+1,(y*2)+1)
 
--- example :: (Renderable (Text Double) b, Renderable (Path V2 Double) b) =>
---           Int -> Int -> QDiagram b V2 Double Any
-
--- exampleGrid :: (Renderable (Text Double) b, Renderable (Path V2 Double) b) =>
-        --    Int -> Int -> QDiagram b V2 Double Any
-
--- kifu :: Diagram B
--- kifu = exampleGrid 18 18
-
-
-pnts = let ps = [(x,y) | x <- [1::Int ..19], y <- [1::Int ..19]]
-           doubleTuple (x,y) = ((x*2)-1, (y*2)-1)
-        in map doubleTuple ps
-        
 exampleGrid :: Renderable (Path V2 Double) b => [(Data.SGF.Color, (Integer,Integer))]-> Int  -> QDiagram b V2 Double Any
-exampleGrid moves size = gridWithHalves size size # bndPts pnts
+exampleGrid moves size = gridWithHalves size size # bndPts tfmpoints
     where
         bndPts = placeDiagramOnGrid (circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1)
+        placesPlayed = map snd  moves
+        tfmpoints = map transformMovetoBoard placesPlayed
