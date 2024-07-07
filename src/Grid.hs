@@ -18,6 +18,10 @@ cSize = 0.03
 
 -- exampleGrid :: (Renderable (Text Double) b, Renderable (Path V2 Double) b) =>
         --    Int -> Int -> QDiagram b V2 Double Any
-exampleGrid n m = gridWithHalves n m # bndPts [ (1::Int,1::Int)]
+
+pnts = let ps = [(x,y) | x <- [1::Int ..19], y <- [1::Int ..19]] 
+           doubleTuple (x,y) = ((x*2)-1, (y*2)-1)
+        in map doubleTuple ps
+exampleGrid n m = gridWithHalves n m # bndPts pnts
     where 
         bndPts = placeDiagramOnGrid (circle (cSize / 2) # fc red  # opacity 0.5 # lw none)
