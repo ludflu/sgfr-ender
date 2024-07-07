@@ -12,6 +12,9 @@ import           Data.SGF
 import           Data.Tree
 import           Grid                        (exampleGrid)
 import           Prelude                     hiding (getContents, (!!))
+import Data.Maybe
+
+data GoColor = Black | White deriving (Eq, Show)
 
 (!!) = genericIndex
 
@@ -52,6 +55,20 @@ showMoves = unlines . showMoves' 1
     showMoves' n [] = []
     showMoves' n [m] = unwords [show n ++ ".", showMove m] : []
     showMoves' n (m : m' : ms) = unwords [show n ++ ".", showMove m, showMove m'] : showMoves' (n + 2) ms
+
+getCoords :: MoveGo -> Maybe (Integer,Integer)
+getCoords move = case move of
+  Pass -> Nothing
+  Play p -> Just p
+
+addColors :: [m] -> [(Color, m)]  
+addColors moves = let moveCount = length moves
+                      colors = concat $ take moveCount $ repeat [Data.SGF.Black,Data.SGF.White]
+                   in zipWith (,) colors moves
+
+renderReady :: [MoveGo] -> [(Color, (Integer,Integer))]
+renderReady moves = let moves' = catMaybes $ map getCoords moves
+                      in addColors moves'
 
 readSgf :: FilePath -> IO [MoveGo]
 readSgf path = do 
