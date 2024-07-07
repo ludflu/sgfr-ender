@@ -10,10 +10,16 @@ import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc, lw, none, opacity, red, black, white,
                                      (#))
 
-import Data.SGF
+import Data.SGF ( Color, Color(White), Color(Black) ) 
 
 cSize :: Double
 cSize = 0.03
+
+isBlack :: (Color, (Integer,Integer)) -> Bool
+isBlack (color, _) = color == Black
+
+isWhite :: (Color, (Integer,Integer)) -> Bool
+isWhite (color, _) = color == White
 
 transformMovetoBoard :: (Integer, Integer) -> (Int,Int)
 transformMovetoBoard (x',y') = let x = fromIntegral x'
@@ -21,8 +27,15 @@ transformMovetoBoard (x',y') = let x = fromIntegral x'
                                 in ((x*2)+1,(y*2)+1)
 
 exampleGrid :: Renderable (Path V2 Double) b => [(Data.SGF.Color, (Integer,Integer))]-> Int  -> QDiagram b V2 Double Any
-exampleGrid moves size = gridWithHalves size size # bndPts tfmpoints
+exampleGrid moves size = gridWithHalves size size 
+        # placeBlackStones blackPoints
+        # placeWhiteStones whitePoints
     where
-        bndPts = placeDiagramOnGrid (circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1)
-        placesPlayed = map snd  moves
-        tfmpoints = map transformMovetoBoard placesPlayed
+        placeBlackStones = placeDiagramOnGrid (circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1)
+        placeWhiteStones = placeDiagramOnGrid (circle (cSize / 2) # fc white  # opacity 1.0 # lw 0.1)
+        blackMoves = filter isBlack moves
+        whiteMoves = filter isWhite moves
+        blackPoints = map  (transformMovetoBoard . snd)  blackMoves
+        whitePoints = map  (transformMovetoBoard . snd)  whiteMoves
+
+        
