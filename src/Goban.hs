@@ -1,7 +1,7 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE TypeFamilies              #-}
 
-module GoBan where
+module Goban where
 
 import           Data.ByteString             (ByteString, getContents, pack,
                                               unpack)
@@ -13,15 +13,17 @@ import           Grid                        (exampleGrid)
 import           Prelude                     hiding (getContents, (!!))
 import Data.Maybe
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Control.Monad.State
 import Diagrams (place)
+-- import qualified Diagrams.BoundingBox as S
 
 --this module is used to calculate what stones to
 -- take off the board when a new stone is placed
 
 data GoStone = Black | White | Empty deriving (Eq, Show)
 data GoPoint =  GoPoint { x::Int, y::Int }deriving (Eq, Show, Ord)
-data BoardState = BoardState { 
+data BoardState = BoardState {
   board :: M.Map GoPoint GoStone,
   boardSize :: Int
 } deriving (Show)
@@ -29,14 +31,15 @@ data BoardState = BoardState {
 opposite :: GoStone -> GoStone
 opposite Black = White
 opposite White = Black
+opposite Empty = Empty
 
-isOnBoard :: BoardState -> GoPoint ->  Bool
-isOnBoard boardState (GoPoint x y)  = x >= 0 && x < boardSize boardState && y >= 0 && y < boardSize boardState 
+isOnBoard :: Int -> GoPoint ->  Bool
+isOnBoard bSize (GoPoint x y)  = x >= 0 && x < bSize && y >= 0 && y < bSize
 
 neighbors :: GoPoint -> State BoardState [GoPoint]
 neighbors  (GoPoint x y) = do boardState <- get
                               let ns = [GoPoint (x+1) y, GoPoint (x-1) y, GoPoint x (y+1), GoPoint x (y-1)]
-                                  onlyOnboard = filter (isOnBoard boardState) ns
+                                  onlyOnboard = filter (isOnBoard $ boardSize boardState) ns
                               return onlyOnboard
 
 getStones :: [GoPoint] -> State BoardState [ GoStone]
@@ -49,7 +52,7 @@ neighborsFriends p = do boardState <- get
                         ns <- neighbors p
                         stones <- getStones ns
                         let pointStone = fromJust $ M.lookup p (board boardState)
-                            pairs = zip ns stones 
+                            pairs = zip ns stones
                             friends = filter (\(p, s) -> s == pointStone) pairs
                         return (map fst friends)
 
@@ -59,7 +62,7 @@ neighborsEnemies p = do boardState <- get
                         ns <- neighbors p
                         stones <- getStones ns
                         let pointStone = fromJust $ M.lookup p (board boardState)
-                            pairs = zip ns stones 
+                            pairs = zip ns stones
                             enemies = filter (\(p, s) -> s == opposite pointStone) pairs
                         return (map fst enemies)
 
@@ -67,7 +70,7 @@ neighborsLiberties :: GoPoint -> State BoardState [GoPoint]
 neighborsLiberties p = do boardState <- get
                           ns <- neighbors p
                           stones <- getStones ns
-                          let pairs = zip ns stones 
+                          let pairs = zip ns stones
                               enemies = filter (\(p, s) -> s == Empty) pairs
                           return (map fst enemies)
 
@@ -75,9 +78,12 @@ neighborsLiberties p = do boardState <- get
 -- given boardState and a point, 
 -- return the list of points 
 -- connected by same-colored stones
-findDragon ::  GoPoint -> State BoardState [GoPoint]
-findDragon point = do boardState <- get
-                      return []
+findDragon ::  S.Set GoPoint ->  GoPoint -> State BoardState [GoPoint]
+findDragon acc point = do nfriends <- neighborsFriends point
+                          let newFriends = filter (`S.member` acc) nfriends
+                              newAcc = S.union acc (S.fromList nfriends)
+                          newPoints <- mapM (findDragon (S.insert point newAcc)) newFriends
+                          return (point : concat newPoints)
 
 -- given boardState and a point,
 -- find all adjacent enemy dragons
