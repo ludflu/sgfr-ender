@@ -33,6 +33,9 @@ opposite Black = White
 opposite White = Black
 opposite Empty = Empty
 
+emptyBoard = let points = [GoPoint x y | x <- [0..18], y <- [0..18]]
+                in BoardState { board = M.fromList $ zip points (repeat Empty), boardSize = 19 }
+
 isOnBoard :: Int -> GoPoint ->  Bool
 isOnBoard bSize (GoPoint x y)  = x >= 0 && x < bSize && y >= 0 && y < bSize
 
@@ -78,12 +81,17 @@ neighborsLiberties p = do boardState <- get
 -- given boardState and a point, 
 -- return the list of points 
 -- connected by same-colored stones
-findDragon ::  S.Set GoPoint ->  GoPoint -> State BoardState [GoPoint]
-findDragon acc point = do nfriends <- neighborsFriends point
-                          let newFriends = filter (`S.member` acc) nfriends
-                              newAcc = S.union acc (S.fromList nfriends)
-                          newPoints <- mapM (findDragon (S.insert point newAcc)) newFriends
-                          return (point : concat newPoints)
+
+
+findDragon' ::  S.Set GoPoint ->  GoPoint -> State BoardState [GoPoint]
+findDragon' acc point = do nfriends <- neighborsFriends point
+                           let newFriends = filter (`S.member` acc) nfriends
+                               newAcc = S.union acc (S.fromList nfriends)
+                           newPoints <- mapM (findDragon' (S.insert point newAcc)) newFriends
+                           return (point : concat newPoints)
+
+findDragon :: GoPoint -> State BoardState [GoPoint]
+findDragon point = findDragon' (S.singleton point) point
 
 -- given boardState and a point,
 -- find all adjacent enemy dragons
