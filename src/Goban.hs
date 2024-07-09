@@ -79,9 +79,6 @@ neighborsLiberties p = do boardState <- get
                           return (map fst empties)
 
 
-libertyCount :: GoPoint -> State BoardState Int
-libertyCount p = do libs <- neighborsLiberties p
-                    return (length libs)
 
 -- given boardState and a point, 
 -- return the list of points 
@@ -98,15 +95,17 @@ findDragon' acc point = do nfriends <- neighborsFriends point
 findDragon :: GoPoint -> State BoardState [GoPoint]
 findDragon point = findDragon' (S.singleton point) point
 
+libertyCount :: GoPoint -> State BoardState Int
+libertyCount p = do dragon <- findDragon p
+                    libs <- mapM neighborsLiberties dragon
+                    return $ length $ S.fromList $ concat libs
+
+
 -- given boardState and a point,
 -- find all adjacent enemy dragons
 findAdjacentEnemyDragons :: GoPoint -> State BoardState [[GoPoint]]
 findAdjacentEnemyDragons  point = do boardState <- get
                                      return []
-
-calcLiberties ::  GoPoint -> State BoardState Int
-calcLiberties point = do ns <- neighbors point
-                         return 0
 
 placeStone :: GoPoint -> GoStone -> State BoardState ()
 placeStone point stone = do boardState <- get
