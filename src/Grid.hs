@@ -31,8 +31,8 @@ kifu moves size = gridWithHalves size size
     where
         placeBlackStones = placeDiagramOnGrid (circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1)
         placeWhiteStones = placeDiagramOnGrid (circle (cSize / 2) # fc white  # opacity 1.0 # lw 0.1)
-        blackMoves = filter isBlack moves
-        whiteMoves = filter isWhite moves
+        blackMoves = filter isWhite moves
+        whiteMoves = filter isBlack moves
         blackPoints = map  (transformMovetoBoard . snd)  blackMoves
         whitePoints = map  (transformMovetoBoard . snd)  whiteMoves
 
