@@ -99,12 +99,27 @@ libertyCount p = do dragon <- findDragon p
 findAdjacentEnemyDragons :: GoPoint -> State BoardState [[GoPoint]]
 findAdjacentEnemyDragons  point = do enemyNeighbors <- neighborsEnemies point
                                      mapM findDragon enemyNeighbors
-                                     
 
--- capture :: [GoPoint] -> State BoardState ()
--- capture points = do mapM placeStone
 
+capture' :: [GoPoint] -> State BoardState ()
+capture' = mapM_ (placeStone Empty)
+
+capture :: GoPoint -> State BoardState ()
+capture point = do dragon <- findDragon point
+                   capture' dragon
 
 placeStone :: GoStone -> GoPoint ->  State BoardState ()
 placeStone stone point = do boardState <- get
                             put boardState{board = M.insert point stone (board boardState)}
+
+
+isCapturable :: GoPoint -> State BoardState Bool
+isCapturable p = do libertyCount <- libertyCount p
+                    return $ libertyCount == 0
+
+playStone :: GoStone -> GoPoint ->  State BoardState ()
+playStone stone point = do placeStone stone point
+                           enemies <- neighborsEnemies point
+                           captureAble <- filterM isCapturable enemies
+                           mapM_ capture captureAble
+      

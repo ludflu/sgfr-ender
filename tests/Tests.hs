@@ -35,7 +35,7 @@ pairStoneLiberties = do playBlack  5 5
 
 atariStone :: State BoardState Int
 atariStone = do playBlack  5 5
-                playWhite 4 5
+                playWhite  4 5
                 playWhite  6 5
                 playWhite  5 4
                 playWhite  5 6
