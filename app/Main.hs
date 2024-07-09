@@ -1,65 +1,37 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE TypeFamilies              #-}
 
 module Main where
 
-import Data.ByteString (ByteString, getContents, pack, unpack)
--- import qualified Data.ByteString.Lazy.UTF8 as BLU
-import qualified Data.ByteString.UTF8 as BSU
-import Data.List hiding ((!!))
-import Data.SGF
-import Data.Tree
-import Diagrams.Backend.Rasterific
-import Diagrams.Backend.SVG hiding (B)
-import Diagrams.Prelude hiding (Point, pad)
-import Grid (exampleGrid)
-import Prelude hiding (getContents, (!!))
+import           Grid                        (kifu)
+import           Diagrams.Backend.Rasterific (B, renderPdf)
+import Diagrams.TwoD (dims2D)
+import SgfReader (readSgf, showMoves, renderReady)
+import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoint (x, y) )
+import qualified Data.SGF as SGF
+import Control.Monad.State ( execState )
+import Diagrams (Renderable)
+import Diagrams.Prelude
 
-(!!) = genericIndex
+convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int,Int)]
+convertToMoves = map (\(color, (x,y)) -> (if color == SGF.Black then Black else White, fromIntegral x, fromIntegral y))
 
-kifu :: Diagram B
-kifu = exampleGrid 18 18
+mygoban :: Renderable (Path V2 Double) B => [(SGF.Color, (Integer,Integer))] -> Int  -> QDiagram B V2 Double Any
+mygoban = kifu
 
-grabTree :: [Word8] -> TreeGo
-grabTree s = case runParser collection () "stdin" s of
-  Right ([Game {tree = TreeGo t}], _) -> t
-
-grabMoves :: TreeGo -> [MoveGo]
-grabMoves
-  n = [move | Right Move {move = Just (color, move)} <- mainLine]
-    where
-      mainLine = map action . head . transpose . levels $ n
-
-parse :: ByteString -> [MoveGo]
-parse = grabMoves . grabTree . unpack
-
-coordinates :: [Char]
-coordinates = delete 'I' ['A' .. 'Z']
-
-showPoint :: Point -> String
-showPoint (x, y) = coordinates !! x : show (19 - y)
-
-pad :: String -> String
-pad s = s ++ replicate (4 - length s) ' '
-
-showMove :: MoveGo -> String
-showMove Pass = "pass"
-showMove (Play p) = pad (showPoint p)
-
-showMoves :: [MoveGo] -> String
-showMoves = unlines . showMoves' 1
-  where
-    showMoves' n [] = []
-    showMoves' n [m] = unwords [show n ++ ".", showMove m] : []
-    showMoves' n (m : m' : ms) = unwords [show n ++ ".", showMove m, showMove m'] : showMoves' (n + 2) ms
-
--- main :: IO ()
--- main = renderPdf 200 200 "output.pdf" (dims2D 200 200) kifu
+stonePlacement:: [(GoPoint,GoStone)] -> [ (SGF.Color, (Integer, Integer))]
+stonePlacement = map (\(point, stone) -> (if stone == Black then SGF.Black else SGF.White, ( toInteger $ x point, toInteger $  y point)))
 
 main :: IO ()
 main = do
-  f <- readFile "65761210-307-mannesmann-ludflu215.sgf"
-  let fs = BSU.fromString f
-
-  putStrLn $ showMoves (parse fs)
+  sgf <- readSgf "65761210-307-mannesmann-ludflu215.sgf"
+  let boardSize = 18
+      moves = renderReady sgf
+      gobanMoves = convertToMoves moves
+      initialGoban = emptyBoard boardSize
+      finalBoard = execState (playMoves gobanMoves) initialGoban
+      onlyStones = getAllStones finalBoard
+      gomoves = stonePlacement onlyStones 
+      kifuDiagram = mygoban gomoves boardSize
+  renderPdf 200 200 "output.pdf" (dims2D 200 200) kifuDiagram
