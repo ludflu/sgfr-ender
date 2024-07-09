@@ -57,7 +57,9 @@ executable sgf-render
                       diagrams-rasterific,
                       diagrams-core,
                       diagrams-lib,
-                      mtl
+                      mtl,
+                      optparse-applicative
+                      
     hs-source-dirs:   app
     default-language: Haskell2010
 

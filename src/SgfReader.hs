@@ -12,7 +12,7 @@ import           Data.SGF
 import           Data.Tree
 import           Grid                        
 import           Prelude                     hiding (getContents, (!!))
-import Data.Maybe ( mapMaybe )
+import Data.Maybe ( mapMaybe, fromMaybe )
 
 (!!) = genericIndex
 
@@ -67,9 +67,9 @@ renderReady :: [MoveGo] -> [(Color, (Integer,Integer))]
 renderReady moves = let moves' = mapMaybe getCoords moves
                       in addColors moves'
 
-readSgf :: FilePath -> IO [MoveGo]
+readSgf :: Maybe FilePath -> IO [MoveGo]
 readSgf path = do
-  rawSgfData <- readFile path
+  rawSgfData <- readFile (fromMaybe "stdin" path)
   let sgfData = BSU.fromString rawSgfData
   return $ parse sgfData
 
