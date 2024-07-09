@@ -4,16 +4,21 @@
 
 module Main where
 
-import           Grid                        (exampleGrid)
+import           Grid                        (kifu)
 import           Diagrams.Backend.Rasterific (B, renderPdf)
 import Diagrams.TwoD (dims2D)
 import SgfReader (readSgf, showMoves, renderReady)
 import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones )
 import qualified Data.SGF as SGF
 import Control.Monad.State ( execState )
+import Diagrams (Renderable)
+import Diagrams.Prelude
 
 convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int,Int)]
 convertToMoves = map (\(color, (x,y)) -> (if color == SGF.Black then Black else White, fromIntegral x, fromIntegral y))
+
+mygoban :: Renderable (Path V2 Double) B => [(SGF.Color, (Integer,Integer))] -> Int  -> QDiagram B V2 Double Any
+mygoban = kifu
 
 main :: IO ()
 main = do
@@ -24,6 +29,6 @@ main = do
       initialGoban = emptyBoard boardSize
       finalBoard = execState (playMoves gobanMoves) initialGoban
       onlyStones = getAllStones finalBoard
-      kifuDiagram = kifu moves boardSize
+      kifuDiagram = mygoban moves boardSize
   print $ show onlyStones
-  -- renderPdf 200 200 "output.pdf" (dims2D 200 200) kifu
+  renderPdf 200 200 "output.pdf" (dims2D 200 200) kifuDiagram
