@@ -10,10 +10,6 @@ import Codec.Binary.UTF8.Generic (UTF8Bytes(empty))
 main :: IO ()
 main = defaultMain allTests
 
-playBlack :: Int -> Int -> State BoardState ()
-playBlack x y = playStone Black (GoPoint x y)
-playWhite :: Int -> Int -> State BoardState ()
-playWhite x y = playStone White (GoPoint x y)
 
 
 makeDragon :: State BoardState [GoPoint]

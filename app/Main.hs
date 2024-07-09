@@ -13,6 +13,7 @@ import qualified Data.SGF as SGF
 import Control.Monad.State ( execState )
 import Diagrams (Renderable)
 import Diagrams.Prelude
+import Diagrams.Backend.Rasterific.CmdLine
 
 convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int,Int)]
 convertToMoves = map (\(color, (x,y)) -> (if color == SGF.Black then Black else White, fromIntegral x, fromIntegral y))

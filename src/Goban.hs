@@ -7,7 +7,7 @@ import           Data.ByteString             (ByteString, getContents, pack,
                                               unpack)
 import qualified Data.ByteString.UTF8        as BSU
 import           Data.List                   hiding ((!!))
---import           Data.SGF
+
 import           Data.Tree
 import           Prelude                     hiding (getContents, (!!))
 import Data.Maybe
@@ -15,7 +15,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Control.Monad.State
 import Diagrams (place)
-import Diagrams.TwoD.Path.LSystem (dragon)
+-- import Diagrams.TwoD.Path.LSystem (dragon)
 
 --this module is used to calculate what stones to
 -- take off the board when a new stone is placed
