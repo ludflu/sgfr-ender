@@ -54,8 +54,7 @@ run renderOpts = do
       finalBoard = execState (playMoves gobanMoves) initialGoban
       gostones = stonePlacement $ getAllStones finalBoard
       kifuDiagram = mygoban gostones boardSize
-      outpath = fromMaybe "goban.pdf" (output renderOpts)
-  renderPdf 200 200 outpath (dims2D 200 200) kifuDiagram
+  renderPdf 200 200 (output renderOpts) (dims2D 200 200) kifuDiagram
 
 
 main :: IO ()
