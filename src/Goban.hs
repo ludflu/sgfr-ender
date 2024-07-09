@@ -16,6 +16,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Control.Monad.State
 import Diagrams (place)
+import Diagrams.TwoD.Path.LSystem (dragon)
 -- import qualified Diagrams.BoundingBox as S
 
 --this module is used to calculate what stones to
@@ -74,9 +75,13 @@ neighborsLiberties p = do boardState <- get
                           ns <- neighbors p
                           stones <- getStones ns
                           let pairs = zip ns stones
-                              enemies = filter (\(p, s) -> s == Empty) pairs
-                          return (map fst enemies)
+                              empties = filter (\(p, s) -> s == Empty) pairs
+                          return (map fst empties)
 
+
+libertyCount :: GoPoint -> State BoardState Int
+libertyCount p = do libs <- neighborsLiberties p
+                    return (length libs)
 
 -- given boardState and a point, 
 -- return the list of points 
