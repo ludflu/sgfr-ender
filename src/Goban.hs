@@ -34,8 +34,9 @@ opposite Black = White
 opposite White = Black
 opposite Empty = Empty
 
-emptyBoard = let points = [GoPoint x y | x <- [0..18], y <- [0..18]]
-                in BoardState { board = M.fromList $ zip points (repeat Empty), boardSize = 19 }
+emptyBoard :: Int -> BoardState
+emptyBoard boardSize = let points = [GoPoint x y | x <- [0..boardSize-1], y <- [0..boardSize-1]]
+                in BoardState { board = M.fromList $ zip points (repeat Empty), boardSize = boardSize }
 
 isOnBoard :: Int -> GoPoint ->  Bool
 isOnBoard bSize (GoPoint x y)  = x >= 0 && x < bSize && y >= 0 && y < bSize
@@ -77,13 +78,6 @@ neighborsLiberties p = do boardState <- get
                           let pairs = zip ns stones
                               empties = filter (\(p, s) -> s == Empty) pairs
                           return (map fst empties)
-
-
-
--- given boardState and a point, 
--- return the list of points 
--- connected by same-colored stones
-
 
 findDragon' ::  S.Set GoPoint ->  GoPoint -> State BoardState [GoPoint]
 findDragon' acc point = do nfriends <- neighborsFriends point

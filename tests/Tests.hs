@@ -5,6 +5,7 @@ import Goban
 import Control.Monad.State
 import Diagrams (place)
 import Test.Tasty.Providers (IsTest(run))
+import Codec.Binary.UTF8.Generic (UTF8Bytes(empty))
 
 main :: IO ()
 main = defaultMain allTests
@@ -43,27 +44,29 @@ sideStone = do placeStone (GoPoint 5 0) Black
 allTests :: TestTree
 allTests = testGroup "all tests" [testCalcBoundary]
 
+iboard = emptyBoard 19
+
 testCalcBoundary :: TestTree
 testCalcBoundary =
   testGroup
     "goban tests" [
 
-        testCase "we should find a dragon" $ evalState makeDragon emptyBoard @?= 
+        testCase "we should find a dragon" $ evalState makeDragon iboard  @?= 
             [GoPoint 5 5, GoPoint 6 5, GoPoint 7 5, GoPoint 8 5],
 
         testCase "a lone stone should have 4 liberties" $ 
-            evalState stoneLiberties emptyBoard @?= 4,
+            evalState stoneLiberties iboard @?= 4,
     
         testCase "two stones should have 6 liberties" $ 
-            evalState pairStoneLiberties emptyBoard @?= 6,
+            evalState pairStoneLiberties iboard @?= 6,
 
         testCase "a stone in atari should have zero liberties" $ 
-            evalState atariStone emptyBoard @?= 0,
+            evalState atariStone iboard @?= 0,
 
         testCase "a stone in the corner should have 2 liberties" $ 
-            evalState cornerStone emptyBoard @?= 2,
+            evalState cornerStone iboard @?= 2,
 
         testCase "a side stone should have 3 liberties" $ 
-            evalState sideStone emptyBoard @?= 3
+            evalState sideStone iboard @?= 3
 
     ]
