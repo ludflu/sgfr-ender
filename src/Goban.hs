@@ -85,7 +85,7 @@ neighborsLiberties p = do boardState <- get
 
 findDragon' ::  S.Set GoPoint ->  GoPoint -> State BoardState [GoPoint]
 findDragon' acc point = do nfriends <- neighborsFriends point
-                           let newFriends = filter (`S.member` acc) nfriends
+                           let newFriends = filter (`S.notMember` acc)  nfriends
                                newAcc = S.union acc (S.fromList nfriends)
                            newPoints <- mapM (findDragon' (S.insert point newAcc)) newFriends
                            return (point : concat newPoints)
