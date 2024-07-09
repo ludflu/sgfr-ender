@@ -126,4 +126,15 @@ playStone stone point = do placeStone stone point
                            enemies <- neighborsEnemies point
                            captureAble <- filterM isCapturable enemies
                            mapM_ capture captureAble
-      
+
+playBlack :: Int -> Int -> State BoardState ()
+playBlack x y = playStone Black (GoPoint x y)
+playWhite :: Int -> Int -> State BoardState ()
+playWhite x y = playStone White (GoPoint x y)
+
+playMoves :: [(GoStone, Int, Int)] -> State BoardState ()
+playMoves = mapM_ (\(s, x, y) -> playStone s (GoPoint x y))
+
+getAllStones :: BoardState -> [(GoPoint, GoStone)]
+getAllStones boardState = let boardMap = board boardState
+                           in  filter (\ (p,s) -> s /= Empty )(M.toList boardMap)

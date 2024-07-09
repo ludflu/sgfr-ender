@@ -24,8 +24,8 @@ transformMovetoBoard (x',y') = let x = fromIntegral x'
                                    y = fromIntegral y' 
                                 in ((x*2)+1,(y*2)+1)
 
-exampleGrid :: Renderable (Path V2 Double) b => [(Data.SGF.Color, (Integer,Integer))]-> Int  -> QDiagram b V2 Double Any
-exampleGrid moves size = gridWithHalves size size 
+kifu :: Renderable (Path V2 Double) b => [(Data.SGF.Color, (Integer,Integer))]-> Int  -> QDiagram b V2 Double Any
+kifu moves size = gridWithHalves size size 
         # placeBlackStones blackPoints
         # placeWhiteStones whitePoints
     where
