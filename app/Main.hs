@@ -27,11 +27,10 @@ main :: IO ()
 main = do
   sgf <- readSgf "65761210-307-mannesmann-ludflu215.sgf"
   let boardSize = 18
-      moves = renderReady sgf
+      moves =  renderReady sgf
       gobanMoves = convertToMoves moves
       initialGoban = emptyBoard boardSize
       finalBoard = execState (playMoves gobanMoves) initialGoban
-      onlyStones = getAllStones finalBoard
-      gomoves = stonePlacement onlyStones 
-      kifuDiagram = mygoban gomoves boardSize
+      gostones = stonePlacement $ getAllStones finalBoard
+      kifuDiagram = mygoban gostones boardSize
   renderPdf 200 200 "output.pdf" (dims2D 200 200) kifuDiagram

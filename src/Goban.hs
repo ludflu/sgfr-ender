@@ -33,11 +33,11 @@ opposite White = Black
 opposite Empty = Empty
 
 emptyBoard :: Int -> BoardState
-emptyBoard boardSize = let points = [GoPoint x y | x <- [0..boardSize-1], y <- [0..boardSize-1]]
+emptyBoard boardSize = let points = [GoPoint x y | x <- [0..boardSize], y <- [0..boardSize]]
                 in BoardState { board = M.fromList $ zip points (repeat Empty), boardSize = boardSize }
 
 isOnBoard :: Int -> GoPoint ->  Bool
-isOnBoard bSize (GoPoint x y)  = x >= 0 && x < bSize && y >= 0 && y < bSize
+isOnBoard bSize (GoPoint x y)  = x >= 0 && x <= bSize && y >= 0 && y <= bSize
 
 neighbors :: GoPoint -> State BoardState [GoPoint]
 neighbors  (GoPoint x y) = do boardState <- get
