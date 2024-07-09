@@ -46,7 +46,11 @@ neighbors  (GoPoint x y) = do boardState <- get
                                   onlyOnboard = filter (isOnBoard $ boardSize boardState) ns
                               return onlyOnboard
 
-getStones :: [GoPoint] -> State BoardState [ GoStone]
+getStone :: GoPoint -> State BoardState GoStone
+getStone point = do boardState <- get
+                    return $ board boardState M.! point
+
+getStones :: [GoPoint] -> State BoardState [GoStone]
 getStones points = do boardState <- get
                       let stones = map (board boardState M.!) points
                       return stones

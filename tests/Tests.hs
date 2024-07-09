@@ -11,9 +11,9 @@ main :: IO ()
 main = defaultMain allTests
 
 playBlack :: Int -> Int -> State BoardState ()
-playBlack x y = placeStone Black (GoPoint x y)
+playBlack x y = playStone Black (GoPoint x y)
 playWhite :: Int -> Int -> State BoardState ()
-playWhite x y = placeStone White (GoPoint x y)
+playWhite x y = playStone White (GoPoint x y)
 
 
 makeDragon :: State BoardState [GoPoint]
@@ -33,13 +33,13 @@ pairStoneLiberties = do playBlack  5 5
                         libertyCount (GoPoint 5 5)
 
 
-atariStone :: State BoardState Int
+atariStone :: State BoardState GoStone
 atariStone = do playBlack  5 5
                 playWhite  4 5
                 playWhite  6 5
                 playWhite  5 4
                 playWhite  5 6
-                libertyCount (GoPoint 5 5)
+                getStone (GoPoint 5 5)
 
 cornerStone = do playBlack  0 0
                  libertyCount (GoPoint 0 0)
@@ -66,8 +66,8 @@ testCalcBoundary =
         testCase "two stones should have 6 liberties" $ 
             evalState pairStoneLiberties iboard @?= 6,
 
-        testCase "a stone in atari should have zero liberties" $ 
-            evalState atariStone iboard @?= 0,
+        testCase "a stone in atari should have zero liberties, get captured" $ 
+            evalState atariStone iboard @?= Empty,
 
         testCase "a stone in the corner should have 2 liberties" $ 
             evalState cornerStone iboard @?= 2,
