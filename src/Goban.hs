@@ -17,7 +17,6 @@ import qualified Data.Set as S
 import Control.Monad.State
 import Diagrams (place)
 import Diagrams.TwoD.Path.LSystem (dragon)
--- import qualified Diagrams.BoundingBox as S
 
 --this module is used to calculate what stones to
 -- take off the board when a new stone is placed
@@ -98,9 +97,14 @@ libertyCount p = do dragon <- findDragon p
 -- given boardState and a point,
 -- find all adjacent enemy dragons
 findAdjacentEnemyDragons :: GoPoint -> State BoardState [[GoPoint]]
-findAdjacentEnemyDragons  point = do boardState <- get
-                                     return []
+findAdjacentEnemyDragons  point = do enemyNeighbors <- neighborsEnemies point
+                                     mapM findDragon enemyNeighbors
+                                     
 
-placeStone :: GoPoint -> GoStone -> State BoardState ()
-placeStone point stone = do boardState <- get
+-- capture :: [GoPoint] -> State BoardState ()
+-- capture points = do mapM placeStone
+
+
+placeStone :: GoStone -> GoPoint ->  State BoardState ()
+placeStone stone point = do boardState <- get
                             put boardState{board = M.insert point stone (board boardState)}

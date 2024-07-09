@@ -10,35 +10,41 @@ import Codec.Binary.UTF8.Generic (UTF8Bytes(empty))
 main :: IO ()
 main = defaultMain allTests
 
+playBlack :: Int -> Int -> State BoardState ()
+playBlack x y = placeStone Black (GoPoint x y)
+playWhite :: Int -> Int -> State BoardState ()
+playWhite x y = placeStone White (GoPoint x y)
+
+
 makeDragon :: State BoardState [GoPoint]
-makeDragon = do placeStone (GoPoint 5 5) Black
-                placeStone (GoPoint 6 5) Black
-                placeStone (GoPoint 7 5) Black
-                placeStone (GoPoint 8 5) Black
+makeDragon = do playBlack 5 5
+                playBlack  6 5
+                playBlack  7 5
+                playBlack  8 5
                 findDragon (GoPoint 5 5)
 
 stoneLiberties :: State BoardState Int
-stoneLiberties = do placeStone (GoPoint 5 5) Black
+stoneLiberties = do playBlack  5 5
                     libertyCount (GoPoint 5 5)
 
 pairStoneLiberties :: State BoardState Int
-pairStoneLiberties = do placeStone (GoPoint 5 5) Black
-                        placeStone (GoPoint 5 6) Black
+pairStoneLiberties = do playBlack  5 5
+                        playBlack  5 6
                         libertyCount (GoPoint 5 5)
 
 
 atariStone :: State BoardState Int
-atariStone = do placeStone (GoPoint 5 5) Black
-                placeStone (GoPoint 4 5) White
-                placeStone (GoPoint 6 5) White
-                placeStone (GoPoint 5 4) White
-                placeStone (GoPoint 5 6) White
+atariStone = do playBlack  5 5
+                playWhite 4 5
+                playWhite  6 5
+                playWhite  5 4
+                playWhite  5 6
                 libertyCount (GoPoint 5 5)
 
-cornerStone = do placeStone (GoPoint 0 0) Black
+cornerStone = do playBlack  0 0
                  libertyCount (GoPoint 0 0)
 
-sideStone = do placeStone (GoPoint 5 0) Black
+sideStone = do playBlack  5 0
                libertyCount (GoPoint 5 0)
 
 allTests :: TestTree
