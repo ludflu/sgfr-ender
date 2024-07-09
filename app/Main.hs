@@ -18,7 +18,7 @@ import Diagrams.Backend.Rasterific.CmdLine
 convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int,Int)]
 convertToMoves = map (\(color, (x,y)) -> (if color == SGF.Black then Black else White, fromIntegral x, fromIntegral y))
 
-mygoban :: Renderable (Path V2 Double) B => [(SGF.Color, (Integer,Integer))] -> Int  -> QDiagram B V2 Double Any
+mygoban ::  [(SGF.Color, (Integer,Integer))] -> Int  -> Diagram B
 mygoban = kifu
 
 stonePlacement:: [(GoPoint,GoStone)] -> [ (SGF.Color, (Integer, Integer))]
