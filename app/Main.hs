@@ -34,5 +34,4 @@ main = do
       onlyStones = getAllStones finalBoard
       gomoves = stonePlacement onlyStones 
       kifuDiagram = mygoban gomoves boardSize
-  print $ show onlyStones
   renderPdf 200 200 "output.pdf" (dims2D 200 200) kifuDiagram
