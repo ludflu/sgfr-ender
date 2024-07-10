@@ -131,8 +131,8 @@ playBlack x y = playStone Black (GoPoint x y)
 playWhite :: Int -> Int -> State BoardState ()
 playWhite x y = playStone White (GoPoint x y)
 
-playMoves :: [(GoStone, Int, Int)] -> State BoardState ()
-playMoves = mapM_ (\(s, x, y) -> playStone s (GoPoint x y))
+playMoves :: [(GoStone, Int, Int,  Int)] -> State BoardState ()
+playMoves = mapM_ (\(s, x, y, moveNumber) -> playStone s (GoPoint x y))
 
 getAllStones :: BoardState -> [(GoPoint, GoStone)]
 getAllStones boardState = let boardMap = board boardState

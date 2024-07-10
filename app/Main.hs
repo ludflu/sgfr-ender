@@ -27,9 +27,14 @@ import Options.Applicative
     (<**>),
   )
 
+flipColor :: SGF.Color -> GoStone
+flipColor SGF.Black = White
+flipColor SGF.White = Black
 
-convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int,Int)]
-convertToMoves = map (\(color, (x,y)) -> (if color == SGF.Black then Black else White, fromIntegral x, fromIntegral y))
+convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int, Int, Int)]
+convertToMoves mvs = let numberedMoves = zip [1..] mvs
+                      in
+                         map (\(n, (color, (x,y))) -> (flipColor color, fromIntegral x, fromIntegral y, n)) numberedMoves
 
 mygoban ::  [(SGF.Color, (Integer,Integer))] -> Int  -> Diagram B
 mygoban = kifu
@@ -39,17 +44,19 @@ stonePlacement = map (\(point, stone) -> (if stone == Black then SGF.Black else 
 
 graduatedMoveList :: Int -> [a] -> [[a]]
 graduatedMoveList step items = let moveCount = length items
-                                   moveExtents = [i * step | i <- [0..moveCount]]
+                                   stepCount = moveCount `div` step
+                                   moveExtents = [i * step | i <- [0..stepCount]]
                                    in map (`take` items) moveExtents
 
 
-makeDiagram :: Int -> FilePath ->  [(GoStone, Int, Int)]-> IO ()
+makeDiagram :: Int -> FilePath ->  [(GoStone, Int, Int, Int)] -> IO ()
 makeDiagram boardSize outfile moves = let 
    initialGoban = emptyBoard boardSize
    finalBoard = execState (playMoves moves) initialGoban
    gostones = stonePlacement $ getAllStones finalBoard
    kifuDiagram = mygoban gostones boardSize
    in renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
+
 
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
@@ -62,7 +69,6 @@ run renderOpts  = do
       movestack = graduatedMoveList (movesPerDiagram renderOpts) gobanMoves
       numberedMoveList = zip [1..] movestack 
    in mapM_ (\(i, moves) -> makeDiagram boardSize (outfile ++ "-" ++ show i ++ ".pdf") moves) numberedMoveList
-    -- makeDiagram boardSize outfile gobanMoves  
 
 main :: IO ()
 main = run =<< execParser opts
