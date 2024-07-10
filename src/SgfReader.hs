@@ -1,10 +1,9 @@
--- {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE TypeFamilies              #-}
 
 module SgfReader where
 
-import           Data.ByteString             (ByteString, getContents, pack,
+import           Data.ByteString             (ByteString, pack,
                                               unpack)
 import qualified Data.ByteString.UTF8        as BSU
 import           Data.List                   hiding ((!!))
@@ -12,7 +11,8 @@ import           Data.SGF
 import           Data.Tree
 import           Grid                        
 import           Prelude                     hiding (getContents, (!!))
-import Data.Maybe ( mapMaybe )
+import Data.Maybe ( mapMaybe, fromMaybe )
+import System.IO (getContents)
 
 (!!) = genericIndex
 
@@ -67,7 +67,7 @@ renderReady :: [MoveGo] -> [(Color, (Integer,Integer))]
 renderReady moves = let moves' = mapMaybe getCoords moves
                       in addColors moves'
 
-readSgf :: FilePath -> IO [MoveGo]
+readSgf ::  FilePath -> IO [MoveGo]
 readSgf path = do
   rawSgfData <- readFile path
   let sgfData = BSU.fromString rawSgfData

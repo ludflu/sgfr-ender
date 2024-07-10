@@ -1,6 +1,6 @@
 all:
-	cabal build
-#	cabal build --ghc-options="-fno-warn-noncanonical-monad-instances"
+	cabal build sgf-render
+	cabal install sgf-render --overwrite-policy=always
 
 run:
-	cabal run
+	sgf-render -i ./65761210-307-mannesmann-ludflu215.sgf -o outtest.pdf
