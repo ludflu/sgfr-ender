@@ -60,6 +60,7 @@ executable sgf-render
                       diagrams-core,
                       diagrams-lib,
                       mtl,
+                      containers,
                       optparse-applicative
                       
     hs-source-dirs:   app

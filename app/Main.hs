@@ -9,7 +9,8 @@ import RenderOpts
 import Diagrams.Backend.Rasterific (B, renderPdf)
 import Diagrams.TwoD (dims2D)
 import SgfReader (readSgf, showMoves, renderReady)
-import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoint (x, y) )
+import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoint (x, y), BoardState (moveNumberMap) )
+import qualified Data.Map as M
 import qualified Data.SGF as SGF
 import Control.Monad.State ( execState )
 import Diagrams (Renderable)
@@ -43,8 +44,8 @@ convertToMoves mvs = let numberedMoves = zip [1..] mvs
 mygoban ::  [(SGF.Color, (Integer, Integer, Integer))] -> Int  -> Diagram B
 mygoban = kifu
 
-stonePlacement:: [(GoPoint,GoStone)] -> [ (SGF.Color, (Integer, Integer, Integer))]
-stonePlacement = map (\(point, stone) -> (convertColor stone, ( toInteger $ x point, toInteger $  y point, 123)))
+stonePlacement:: [(GoPoint,GoStone)] ->  M.Map GoPoint Int -> [ (SGF.Color, (Integer, Integer, Integer))]
+stonePlacement stones moveMap = map (\(point, stone) -> (convertColor stone,  ( toInteger $ x point, toInteger $  y point, toInteger $ moveMap M.!  point ) ) ) stones
 
 graduatedMoveList :: Int -> [a] -> [[a]]
 graduatedMoveList step items = let moveCount = length items
@@ -57,8 +58,8 @@ makeDiagram :: Int -> FilePath ->  [(GoStone, Int, Int, Int)] -> IO ()
 makeDiagram boardSize outfile moves = let 
    initialGoban = emptyBoard boardSize
    finalBoard = execState (playMoves moves) initialGoban
-   gostones = stonePlacement $ getAllStones finalBoard
-   kifuDiagram = mygoban gostones boardSize
+   gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
+   kifuDiagram = mygoban gostones  boardSize
    in renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
 
 
