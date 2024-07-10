@@ -6,4 +6,4 @@ clean:
 	rm test/*.pdf
 
 run:
-	sgf-render -i ./65761210-307-mannesmann-ludflu215.sgf -o test/outtest --movesPerDiagram 100
+	sgf-render -i ./65761210-307-mannesmann-ludflu215.sgf -o test/outtest --movesPerDiagram 50

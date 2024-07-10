@@ -28,18 +28,19 @@ import Options.Applicative
     (<**>),
   )
 
-flipColor :: SGF.Color -> GoStone
-flipColor SGF.Black = White
-flipColor SGF.White = Black
+mapColor :: SGF.Color -> GoStone
+mapColor SGF.Black = Black
+mapColor SGF.White = White
 
 convertColor ::  GoStone -> SGF.Color
-convertColor  Black=SGF.Black 
-convertColor White= SGF.White 
+convertColor Black=SGF.Black 
+convertColor White=SGF.White
+
 
 convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int, Int, Int)]
 convertToMoves mvs = let numberedMoves = zip [1..] mvs
                       in
-                         map (\(n, (color, (x,y))) -> (flipColor color, fromIntegral x, fromIntegral y, n)) numberedMoves
+                         map (\(n, (color, (x,y))) -> (mapColor color, fromIntegral x, fromIntegral y, n)) numberedMoves
 
 mygoban ::  [(SGF.Color, (Integer, Integer, Integer))] -> Int  -> Diagram B
 mygoban = kifu
@@ -59,7 +60,7 @@ makeDiagram boardSize outfile moves = let
    initialGoban = emptyBoard boardSize
    finalBoard = execState (playMoves moves) initialGoban
    gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
-   kifuDiagram = mygoban gostones  boardSize
+   kifuDiagram = mygoban gostones boardSize
    in renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
 
 
