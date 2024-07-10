@@ -46,7 +46,7 @@ graduatedMoveList step items = let moveCount = length items
 
 run :: RenderOpts -> IO ()
 run renderOpts = do
-  sgf <- readSgf (input renderOpts) --"65761210-307-mannesmann-ludflu215.sgf"
+  sgf <- readSgf (input renderOpts)
   let boardSize = 18
       moves =  renderReady sgf
       gobanMoves = convertToMoves moves

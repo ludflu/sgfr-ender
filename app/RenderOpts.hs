@@ -25,14 +25,12 @@ parseOpts = RenderOpts <$>
           <> showDefault
           <> value 4
           <> help "how many diagrams to show on each page")
-    <*> option auto ( long "input" 
+    <*> strOption ( long "input" 
           <> short 'i'
-          <> value "input.sgf"
           <> metavar "INPUT" 
           <> help "input file path")
-    <*> option auto ( long "output" 
+    <*> strOption ( long "output" 
         <> short 'o'
-        <> value "out.pdf"
         <> metavar "OUTPUT" 
         <> help "output file pattern")
 
