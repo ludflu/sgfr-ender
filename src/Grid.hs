@@ -40,29 +40,27 @@ myGridOpts = GridOpts
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-blackStone n = let dgm = text n # fontSizeL 0.015
+placeBlackStones n = let dgm = text n # fontSizeL 0.015
                                    # fc white
-                         <> circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1
-                in placeDiagramOnGrid dgm
+                                <> circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1
+                      in placeDiagramOnGrid dgm
 
 
-whiteStone n = let dgm = text n # fontSizeL 0.015
-                                   # fc black
-                         <> circle (cSize / 2) # fc white  # opacity 1.0 # lw 0.2
-                in placeDiagramOnGrid dgm
+placeWhiteStones n = let dgm = text n # fontSizeL 0.015
+                                      # fc black
+                               <> circle (cSize / 2) # fc white  # opacity 1.0 # lw 0.2
+                      in placeDiagramOnGrid dgm
 
 
 kifu :: [(Color, (Integer, Integer, Integer))] -> Int -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
     where
-        placeBlackStones = blackStone "123"
-        placeWhiteStones = whiteStone "321"
         blackMoves = filter isWhite moves
         whiteMoves = filter isBlack moves
         blackPoints = map  (transformMovetoBoard . snd)  blackMoves
         whitePoints = map  (transformMovetoBoard . snd)  whiteMoves
         boardDiagram = gridWithHalves' myGridOpts size size
-                            # placeBlackStones blackPoints
-                            # placeWhiteStones whitePoints
+                            # placeBlackStones "123" blackPoints
+                            # placeWhiteStones "321" whitePoints
 
 
