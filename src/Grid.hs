@@ -7,11 +7,11 @@
 {-# LANGUAGE TypeFamilies              #-}
 
 module Grid where
-import Diagrams.TwoD.Grid ( gridWithHalves, placeDiagramOnGrid )
+import Diagrams.TwoD.Grid ( gridWithHalves', placeDiagramOnGrid, GridOpts (..) )
 import           Diagrams.TwoD.Text
 import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc, lw, none, opacity, red, black, white, yellow,
-                                     (#), rect, centerXY, square, atop)
+                                     (#), rect, centerXY, square, atop, Default (def), thin, r2, )
 import           Diagrams.Backend.Rasterific (B, renderPdf)
 
 import Data.SGF ( Color, Color(White), Color(Black) ) 
@@ -33,6 +33,16 @@ transformMovetoBoard (x',y') = let x = fromIntegral x'
 woodenBoard ::  QDiagram B V2 Double Any
 woodenBoard  = square 1.1  # lw none # fc yellow # opacity 0.5
 
+-- myGridOpts :: GridOpts
+myGridOpts = GridOpts
+        { _gridLineWidth = thin
+        , _gridXColour   = black
+        , _gridYColour   = black
+        , _gridLL        = r2 (1.0, 1.0)
+        , _gridLR        = r2 (2.0, 1.0)
+        , _gridUL        = r2 (1.0, 2.0)
+        }
+
 kifu :: [(Color, (Integer, Integer))] -> Int -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
     where
@@ -42,7 +52,7 @@ kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
         whiteMoves = filter isBlack moves
         blackPoints = map  (transformMovetoBoard . snd)  blackMoves
         whitePoints = map  (transformMovetoBoard . snd)  whiteMoves
-        boardDiagram = gridWithHalves size size 
+        boardDiagram = gridWithHalves' myGridOpts size size 
                             # placeBlackStones blackPoints
                             # placeWhiteStones whitePoints
 
