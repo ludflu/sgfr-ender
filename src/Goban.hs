@@ -24,7 +24,9 @@ data GoStone = Black | White | Empty deriving (Eq, Show)
 data GoPoint =  GoPoint { x::Int, y::Int }deriving (Eq, Show, Ord)
 data BoardState = BoardState {
   board :: M.Map GoPoint GoStone,
-  boardSize :: Int
+  moveNumberMap :: M.Map GoPoint Int,
+  boardSize :: Int,
+  moveNumber :: Int
 } deriving (Show)
 
 opposite :: GoStone -> GoStone
@@ -34,7 +36,11 @@ opposite Empty = Empty
 
 emptyBoard :: Int -> BoardState
 emptyBoard boardSize = let points = [GoPoint x y | x <- [0..boardSize], y <- [0..boardSize]]
-                in BoardState { board = M.fromList $ zip points (repeat Empty), boardSize = boardSize }
+                in BoardState { 
+                    board = M.fromList $ zip points (repeat Empty), 
+                    moveNumberMap = M.empty,
+                    moveNumber = 0,
+                    boardSize = boardSize }
 
 isOnBoard :: Int -> GoPoint ->  Bool
 isOnBoard bSize (GoPoint x y)  = x >= 0 && x <= bSize && y >= 0 && y <= bSize
@@ -113,7 +119,10 @@ capture point = do dragon <- findDragon point
 
 placeStone :: GoStone -> GoPoint ->  State BoardState ()
 placeStone stone point = do boardState <- get
-                            put boardState{board = M.insert point stone (board boardState)}
+                            put boardState{
+                                board = M.insert point stone (board boardState),
+                                moveNumberMap = M.insert point (moveNumber boardState) (moveNumberMap boardState),
+                                moveNumber = moveNumber boardState + 1}
 
 
 isCapturable :: GoPoint -> State BoardState Bool
@@ -131,8 +140,8 @@ playBlack x y = playStone Black (GoPoint x y)
 playWhite :: Int -> Int -> State BoardState ()
 playWhite x y = playStone White (GoPoint x y)
 
-playMoves :: [(GoStone, Int, Int)] -> State BoardState ()
-playMoves = mapM_ (\(s, x, y) -> playStone s (GoPoint x y))
+playMoves :: [(GoStone, Int, Int,  Int)] -> State BoardState ()
+playMoves = mapM_ (\(s, x, y, moveNumber) -> playStone s (GoPoint x y))
 
 getAllStones :: BoardState -> [(GoPoint, GoStone)]
 getAllStones boardState = let boardMap = board boardState

@@ -9,7 +9,8 @@ import RenderOpts
 import Diagrams.Backend.Rasterific (B, renderPdf)
 import Diagrams.TwoD (dims2D)
 import SgfReader (readSgf, showMoves, renderReady)
-import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoint (x, y) )
+import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoint (x, y), BoardState (moveNumberMap) )
+import qualified Data.Map as M
 import qualified Data.SGF as SGF
 import Control.Monad.State ( execState )
 import Diagrams (Renderable)
@@ -27,35 +28,53 @@ import Options.Applicative
     (<**>),
   )
 
+mapColor :: SGF.Color -> GoStone
+mapColor SGF.Black = Black
+mapColor SGF.White = White
 
-convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int,Int)]
-convertToMoves = map (\(color, (x,y)) -> (if color == SGF.Black then Black else White, fromIntegral x, fromIntegral y))
+convertColor ::  GoStone -> SGF.Color
+convertColor Black=SGF.Black 
+convertColor White=SGF.White
 
-mygoban ::  [(SGF.Color, (Integer,Integer))] -> Int  -> Diagram B
+
+convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int, Int, Int)]
+convertToMoves mvs = let numberedMoves = zip [1..] mvs
+                      in
+                         map (\(n, (color, (x,y))) -> (mapColor color, fromIntegral x, fromIntegral y, n)) numberedMoves
+
+mygoban ::  [(SGF.Color, (Integer, Integer, Integer))] -> Int  -> Diagram B
 mygoban = kifu
 
-stonePlacement:: [(GoPoint,GoStone)] -> [ (SGF.Color, (Integer, Integer))]
-stonePlacement = map (\(point, stone) -> (if stone == Black then SGF.Black else SGF.White, ( toInteger $ x point, toInteger $  y point)))
+stonePlacement:: [(GoPoint,GoStone)] ->  M.Map GoPoint Int -> [ (SGF.Color, (Integer, Integer, Integer))]
+stonePlacement stones moveMap = map (\(point, stone) -> (convertColor stone,  ( toInteger $ x point, toInteger $  y point, toInteger $ moveMap M.!  point ) ) ) stones
 
 graduatedMoveList :: Int -> [a] -> [[a]]
 graduatedMoveList step items = let moveCount = length items
-                                   moveExtents = [i * step | i <- [0..moveCount]]
-                                   in map (\extent -> take extent items) moveExtents
+                                   stepCount = moveCount `div` step
+                                   moveExtents = [i * step | i <- [0..stepCount]]
+                                   in map (`take` items) moveExtents
 
 
+makeDiagram :: Int -> FilePath ->  [(GoStone, Int, Int, Int)] -> IO ()
+makeDiagram boardSize outfile moves = let 
+   initialGoban = emptyBoard boardSize
+   finalBoard = execState (playMoves moves) initialGoban
+   gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
+   kifuDiagram = mygoban gostones boardSize
+   in renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
 
-run :: RenderOpts -> IO ()
-run renderOpts = do
+
+run :: RenderOpts  -> IO ()
+run renderOpts  = do
   sgf <- readSgf (input renderOpts)
   let boardSize = 18
+      pdfDims = 200
       moves =  renderReady sgf
       gobanMoves = convertToMoves moves
-      initialGoban = emptyBoard boardSize
-      finalBoard = execState (playMoves gobanMoves) initialGoban
-      gostones = stonePlacement $ getAllStones finalBoard
-      kifuDiagram = mygoban gostones boardSize
-  renderPdf 200 200 (output renderOpts) (dims2D 200 200) kifuDiagram
-
+      outfile = output renderOpts
+      movestack = graduatedMoveList (movesPerDiagram renderOpts) gobanMoves
+      numberedMoveList = zip [1..] movestack 
+   in mapM_ (\(i, moves) -> makeDiagram boardSize (outfile ++ "-" ++ show i ++ ".pdf") moves) numberedMoveList
 
 main :: IO ()
 main = run =<< execParser opts
