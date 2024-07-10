@@ -4,7 +4,7 @@
 
 module Main where
 
-import Grid                        (kifu)
+import Kifu                        (kifu)
 import RenderOpts
 import Diagrams.Backend.Rasterific (B, renderPdf)
 import Diagrams.TwoD (dims2D)

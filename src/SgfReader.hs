@@ -9,7 +9,7 @@ import qualified Data.ByteString.UTF8        as BSU
 import           Data.List                   hiding ((!!))
 import           Data.SGF
 import           Data.Tree
-import           Grid                        
+import           Kifu                        
 import           Prelude                     hiding (getContents, (!!))
 import Data.Maybe ( mapMaybe, fromMaybe )
 import System.IO (getContents)
