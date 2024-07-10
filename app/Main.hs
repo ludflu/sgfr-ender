@@ -31,16 +31,20 @@ flipColor :: SGF.Color -> GoStone
 flipColor SGF.Black = White
 flipColor SGF.White = Black
 
+convertColor ::  GoStone -> SGF.Color
+convertColor  Black=SGF.Black 
+convertColor White= SGF.White 
+
 convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int, Int, Int)]
 convertToMoves mvs = let numberedMoves = zip [1..] mvs
                       in
                          map (\(n, (color, (x,y))) -> (flipColor color, fromIntegral x, fromIntegral y, n)) numberedMoves
 
-mygoban ::  [(SGF.Color, (Integer,Integer))] -> Int  -> Diagram B
+mygoban ::  [(SGF.Color, (Integer, Integer, Integer))] -> Int  -> Diagram B
 mygoban = kifu
 
-stonePlacement:: [(GoPoint,GoStone)] -> [ (SGF.Color, (Integer, Integer))]
-stonePlacement = map (\(point, stone) -> (if stone == Black then SGF.Black else SGF.White, ( toInteger $ x point, toInteger $  y point)))
+stonePlacement:: [(GoPoint,GoStone)] -> [ (SGF.Color, (Integer, Integer, Integer))]
+stonePlacement = map (\(point, stone) -> (convertColor stone, ( toInteger $ x point, toInteger $  y point, 123)))
 
 graduatedMoveList :: Int -> [a] -> [[a]]
 graduatedMoveList step items = let moveCount = length items

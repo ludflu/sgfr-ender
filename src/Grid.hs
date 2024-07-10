@@ -11,7 +11,7 @@ import Diagrams.TwoD.Grid ( gridWithHalves', placeDiagramOnGrid, GridOpts (..) )
 import           Diagrams.TwoD.Text
 import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc, lw, none, opacity, red, black, white, yellow,
-                                     (#), rect, centerXY, square, atop, Default (def), thin, r2, )
+                                     (#), rect, centerXY, square, atop, Default (def), thin, r2, named, )
 import           Diagrams.Backend.Rasterific (B, renderPdf)
 
 import Data.SGF ( Color, Color(White), Color(Black) ) 
@@ -19,15 +19,15 @@ import Data.SGF ( Color, Color(White), Color(Black) )
 cSize :: Double
 cSize = 0.045
 
-isBlack :: (Color, (Integer,Integer)) -> Bool
+isBlack :: (Color, (Integer,Integer, Integer)) -> Bool
 isBlack (color, _) = color == Black
 
-isWhite :: (Color, (Integer,Integer)) -> Bool
+isWhite :: (Color, (Integer,Integer, Integer)) -> Bool
 isWhite (color, _) = color == White
 
-transformMovetoBoard :: (Integer, Integer) -> (Int,Int)
-transformMovetoBoard (x',y') = let x = fromIntegral x'
-                                   y = fromIntegral y' 
+transformMovetoBoard :: (Integer, Integer, Integer) -> (Int,Int)
+transformMovetoBoard (x',y', n) = let x = fromIntegral x'
+                                      y = fromIntegral y' 
                                 in ((x*2)+1,(y*2)+1)
 
 woodenBoard ::  QDiagram B V2 Double Any
@@ -43,11 +43,11 @@ myGridOpts = GridOpts
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-kifu :: [(Color, (Integer, Integer))] -> Int -> QDiagram B V2 Double Any
+kifu :: [(Color, (Integer, Integer, Integer))] -> Int -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
     where
-        placeBlackStones = placeDiagramOnGrid (circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1)
-        placeWhiteStones = placeDiagramOnGrid (circle (cSize / 2) # fc white  # opacity 1.0 # lw 0.2)
+        placeBlackStones = placeDiagramOnGrid (text "123" # fontSizeL 0.015 # fc white <> circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1 ) 
+        placeWhiteStones = placeDiagramOnGrid (text "123" # fontSizeL 0.015 # fc black <> circle (cSize / 2) # fc white  # opacity 1.0 # lw 0.2)
         blackMoves = filter isWhite moves
         whiteMoves = filter isBlack moves
         blackPoints = map  (transformMovetoBoard . snd)  blackMoves
