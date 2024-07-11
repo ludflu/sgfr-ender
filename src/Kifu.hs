@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE TypeFamilies              #-}
 
-module Grid where
+module Kifu where
 import Diagrams.TwoD.Grid ( gridWithHalves', placeDiagramOnGrid, GridOpts (..), annotate )
 import           Diagrams.TwoD.Text
 import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
