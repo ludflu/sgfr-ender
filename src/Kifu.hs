@@ -8,7 +8,7 @@ import Diagrams.TwoD.Grid ( gridWithHalves', placeDiagramOnGrid, GridOpts (..), 
 import           Diagrams.TwoD.Text
 import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc, lw, none, opacity, red, black, white, yellow,
-                                     (#), rect, centerXY, square, atop, Default (def), thin, r2, named, IsName, local, Colour, )
+                                     (#), (===), (|||), rect, centerXY, square, atop, Default (def), thin, r2, named, IsName, local, Colour, )
 import           Diagrams.Backend.Rasterific (B, renderPdf)
 
 import qualified Data.SGF  as SGF
@@ -58,10 +58,14 @@ placeWhiteStones n = let dgm = circle (cSize / 2) # fc white  # opacity 1.0 # lw
 txtPt :: String ->  QDiagram B V2 Double Any
 txtPt t = text t # fontSize (local 0.023)
 
--- ann :: Int -> Int -> Color  -> String -> QDiagram B V2 Double Any
--- ann :: Int -> Int -> Colour Double -> String -> QDiagram B V2 Double Any -> QDiagram B V2 Double Any
+ann :: Int -> Int -> Colour Double -> String -> QDiagram B V2 Double Any -> QDiagram B V2 Double Any
 ann x y color number = annotate number txtPt color x y
 
+twoUp :: Diagram B -> Diagram B -> Diagram B
+twoUp a b = a === b
+
+fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
+fourUp a b c d = twoUp a b ||| twoUp c d
 
 kifu :: [(SGF.Color, (Integer, Integer, Integer))] -> Int -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard

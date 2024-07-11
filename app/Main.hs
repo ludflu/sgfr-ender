@@ -4,7 +4,7 @@
 
 module Main where
 
-import Kifu                        (kifu)
+import Kifu                        (kifu, twoUp, fourUp)
 import RenderOpts
 import Diagrams.Backend.Rasterific (B, renderPdf)
 import Diagrams.TwoD (dims2D)
@@ -27,6 +27,8 @@ import Options.Applicative
     progDesc,
     (<**>),
   )
+import Data.List.Split (chunksOf)
+
 
 mapColor :: SGF.Color -> GoStone
 mapColor SGF.Black = Black
@@ -54,10 +56,14 @@ graduatedMoveList step items = let moveCount = length items
                                    moveExtents = [i * step | i <- [0..stepCount]]
                                    in map (`take` items) moveExtents
 
-
-
 renderDiagram :: FilePath -> Diagram B -> IO ()
 renderDiagram outfile kifuDiagram = renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
+
+renderDiagrams :: FilePath -> [Diagram B] -> IO ()
+renderDiagrams outfile [kifu] = renderDiagram outfile kifu
+renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
+renderDiagrams outfile [a,b,c] = renderDiagram outfile $ a === b ||| c
+renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
 buildDiagram :: Int  ->  [(GoStone, Int, Int, Int)] -> Diagram B
 buildDiagram boardSize moves = let 
@@ -66,11 +72,9 @@ buildDiagram boardSize moves = let
       gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
    in mygoban gostones boardSize
 
-
 buildAndRenderDiagram :: Int -> FilePath ->  [(GoStone, Int, Int, Int)] -> IO ()
 buildAndRenderDiagram boardSize outfile moves = let kifu = buildDiagram boardSize moves
                                                  in renderDiagram outfile kifu
-
 
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
@@ -82,8 +86,9 @@ run renderOpts  = do
       outfile = output renderOpts
       movestack = graduatedMoveList (movesPerDiagram renderOpts) gobanMoves
       numberedMoveList = zip [1..] movestack
-      allKifus = map (\(i, moves) -> (i, buildDiagram boardSize moves)) numberedMoveList
-   in mapM_ (\(i, kifu) -> renderDiagram (outfile ++ "-" ++ show i ++ ".pdf") kifu) allKifus
+      allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList
+      chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
+   in mapM_ (\(i, kifu) -> renderDiagrams (outfile ++ "-" ++ show i ++ ".pdf") kifu) chunkedKifus
 
 main :: IO ()
 main = run =<< execParser opts
