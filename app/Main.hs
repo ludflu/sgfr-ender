@@ -55,13 +55,21 @@ graduatedMoveList step items = let moveCount = length items
                                    in map (`take` items) moveExtents
 
 
-makeDiagram :: Int -> FilePath ->  [(GoStone, Int, Int, Int)] -> IO ()
-makeDiagram boardSize outfile moves = let 
-   initialGoban = emptyBoard boardSize
-   finalBoard = execState (playMoves moves) initialGoban
-   gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
-   kifuDiagram = mygoban gostones boardSize
-   in renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
+
+renderDiagram :: FilePath -> Diagram B -> IO ()
+renderDiagram outfile kifuDiagram = renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
+
+buildDiagram :: Int  ->  [(GoStone, Int, Int, Int)] -> Diagram B
+buildDiagram boardSize moves = let 
+      initialGoban = emptyBoard boardSize
+      finalBoard = execState (playMoves moves) initialGoban
+      gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
+   in mygoban gostones boardSize
+
+
+buildAndRenderDiagram :: Int -> FilePath ->  [(GoStone, Int, Int, Int)] -> IO ()
+buildAndRenderDiagram boardSize outfile moves = let kifu = buildDiagram boardSize moves
+                                                 in renderDiagram outfile kifu
 
 
 run :: RenderOpts  -> IO ()
@@ -73,8 +81,9 @@ run renderOpts  = do
       gobanMoves = convertToMoves moves
       outfile = output renderOpts
       movestack = graduatedMoveList (movesPerDiagram renderOpts) gobanMoves
-      numberedMoveList = zip [1..] movestack 
-   in mapM_ (\(i, moves) -> makeDiagram boardSize (outfile ++ "-" ++ show i ++ ".pdf") moves) numberedMoveList
+      numberedMoveList = zip [1..] movestack
+      allKifus = map (\(i, moves) -> (i, buildDiagram boardSize moves)) numberedMoveList
+   in mapM_ (\(i, kifu) -> renderDiagram (outfile ++ "-" ++ show i ++ ".pdf") kifu) allKifus
 
 main :: IO ()
 main = run =<< execParser opts
