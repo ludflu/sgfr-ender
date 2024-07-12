@@ -21,11 +21,11 @@ import Diagrams (place)
 -- take off the board when a new stone is placed
 
 data GoStone = Black | White | Empty deriving (Eq, Show)
-data GoPoint =  GoPoint { x::Int, y::Int }deriving (Eq, Show, Ord)
+data GoPoint =  GoPoint { x::Integer, y::Integer }deriving (Eq, Show, Ord)
 data BoardState = BoardState {
   board :: M.Map GoPoint GoStone,
   moveNumberMap :: M.Map GoPoint Int,
-  boardSize :: Int,
+  boardSize :: Integer,
   moveNumber :: Int
 } deriving (Show)
 
@@ -34,7 +34,7 @@ opposite Black = White
 opposite White = Black
 opposite Empty = Empty
 
-emptyBoard :: Int -> BoardState
+emptyBoard :: Integer -> BoardState
 emptyBoard boardSize = let points = [GoPoint x y | x <- [0..boardSize], y <- [0..boardSize]]
                 in BoardState { 
                     board = M.fromList $ zip points (repeat Empty), 
@@ -42,13 +42,13 @@ emptyBoard boardSize = let points = [GoPoint x y | x <- [0..boardSize], y <- [0.
                     moveNumber = 0,
                     boardSize = boardSize }
 
-isOnBoard :: Int -> GoPoint ->  Bool
+isOnBoard :: Integer -> GoPoint ->  Bool
 isOnBoard bSize (GoPoint x y)  = x >= 0 && x <= bSize && y >= 0 && y <= bSize
 
 neighbors :: GoPoint -> State BoardState [GoPoint]
 neighbors  (GoPoint x y) = do boardState <- get
                               let ns = [GoPoint (x+1) y, GoPoint (x-1) y, GoPoint x (y+1), GoPoint x (y-1)]
-                                  onlyOnboard = filter (isOnBoard $ boardSize boardState) ns
+                                  onlyOnboard = filter (isOnBoard $ fromIntegral $ boardSize boardState) ns
                               return onlyOnboard
 
 getStone :: GoPoint -> State BoardState GoStone
@@ -135,12 +135,12 @@ playStone stone point = do placeStone stone point
                            captureAble <- filterM isCapturable enemies
                            mapM_ capture captureAble
 
-playBlack :: Int -> Int -> State BoardState ()
+playBlack :: Integer -> Integer -> State BoardState ()
 playBlack x y = playStone Black (GoPoint x y)
-playWhite :: Int -> Int -> State BoardState ()
+playWhite :: Integer -> Integer -> State BoardState ()
 playWhite x y = playStone White (GoPoint x y)
 
-playMoves :: [(GoStone, Int, Int,  Int)] -> State BoardState ()
+playMoves :: [(GoStone, Integer, Integer,  Integer)] -> State BoardState ()
 playMoves = mapM_ (\(s, x, y, moveNumber) -> playStone s (GoPoint x y))
 
 getAllStones :: BoardState -> [(GoPoint, GoStone)]

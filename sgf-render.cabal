@@ -84,4 +84,7 @@ test-suite sgf-tests
                  mtl,
                  containers,
                  utf8-string,
-                 bytestring
+                 bytestring,
+                 diagrams-rasterific,
+                 optparse-applicative,
+                 split

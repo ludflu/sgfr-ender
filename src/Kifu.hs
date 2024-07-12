@@ -14,25 +14,27 @@ import           Diagrams.Backend.Rasterific (B, renderPdf)
 import qualified Data.SGF  as SGF
 import Data.List (sortBy, sortOn)
 import Data.Ord (comparing, Down (Down))
+import Goban (GoStone(Black, White))
 
 cSize :: Double
 cSize = 0.045
 
-isBlack :: (SGF.Color, (Integer,Integer, Integer)) -> Bool
-isBlack (color, _) = color == SGF.Black
+isBlack :: (GoStone, Integer,Integer, Integer) -> Bool
+isBlack (color, _, _, _) = color == Black
 
-isWhite :: (SGF.Color, (Integer,Integer, Integer)) -> Bool
-isWhite (color, _) = color == SGF.White
+isWhite :: (GoStone, Integer,Integer, Integer) -> Bool
+isWhite (color, _, _, _) = color == White
 
-mapColor SGF.Black = black
-mapColor SGF.White = white
 
+mapColor :: (Ord a, Floating a) => GoStone -> Colour a
+mapColor Black = black
+mapColor White = white
 
 tfm :: Integer -> Integer -> (Int,Int)
 tfm x y = ((fromIntegral x*2)+1,(fromIntegral y*2)+1)
 
-transformMovetoBoard :: (Integer, Integer, Integer) -> (Int,Int)
-transformMovetoBoard (x',y', n) = tfm x' y'
+transformMovetoBoard :: (a, Integer, Integer, Integer) -> (Int,Int)
+transformMovetoBoard (_, x',y', n) = tfm x' y'
 
 woodenBoard ::  QDiagram B V2 Double Any
 woodenBoard  = square 1.1  # lw none # fc yellow # opacity 0.5
@@ -67,20 +69,21 @@ twoUp a b = a === b
 fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
 fourUp a b c d = twoUp a b ||| twoUp c d
 
-kifu :: [(SGF.Color, (Integer, Integer, Integer))] -> Int -> QDiagram B V2 Double Any
+kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
     where
         blackMoves = filter isWhite moves
         whiteMoves = filter isBlack moves
-        blackPoints = map  (transformMovetoBoard . snd)  blackMoves
-        whitePoints = map  (transformMovetoBoard . snd)  whiteMoves
-        last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,(_, _, x)) -> x)) moves
+        blackPoints = map  transformMovetoBoard  blackMoves
+        whitePoints = map  transformMovetoBoard  whiteMoves
+        last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_, _, x) -> x)) moves
+        last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
 
 
-        bd = gridWithHalves' myGridOpts size size
+        bd = gridWithHalves' myGridOpts  (fromIntegral size)  (fromIntegral size)
                             # placeBlackStones "123" blackPoints
                             # placeWhiteStones "321" whitePoints
 
         boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
-                                                        in acc # ann  x'  y' (mapColor color) (show n) ) bd last5
+                                                        in acc # ann  x'  y' (mapColor color) (show n) ) bd last5Locations
 

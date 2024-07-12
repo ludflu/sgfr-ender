@@ -1,8 +1,9 @@
+-- module KifuTests where
 
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (testCase, (@?=))
 import Goban
-    ( BoardState,
+    ( BoardState (moveNumberMap),
       GoPoint(GoPoint),
       GoStone(Black, Empty),
       emptyBoard,
@@ -15,6 +16,7 @@ import Control.Monad.State
 import Diagrams (place)
 import Test.Tasty.Providers (IsTest(run))
 import Codec.Binary.UTF8.Generic (UTF8Bytes(empty))
+-- import Main (buildAndRenderDiagram, stonePlacement)
 
 main :: IO ()
 main = defaultMain allTests
@@ -40,6 +42,11 @@ lowerLeft2 :: State BoardState [(GoPoint,GoStone)]
 lowerLeft2 = do
                 playBlack 15 3
                 gets getAllStones
+
+-- renderOneStone :: IO ()
+-- renderOneStone = let (stones,state) = runState lowerLeft2 iboard
+--                      gostones = stonePlacement (getAllStones state) (moveNumberMap state)
+--                   in buildAndRenderDiagram 18 "/tmp/testout.pdf" gostones
 
 pairStoneLiberties :: State BoardState Int
 pairStoneLiberties = do playBlack  5 5
@@ -95,4 +102,8 @@ testCalcBoundary =
         testCase "playing a stone should put it on the board" $
             evalState lowerLeft2 iboard @?= [(GoPoint 15 3, Black)]
 
+        -- testCase "rendering one stone play should get a diagram" $ do
+        --     r <- renderOneStone 
+        --     r @?= ()
+            
     ]

@@ -40,16 +40,13 @@ convertColor Black=SGF.Black
 convertColor White=SGF.White
 
 
-convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Int, Int, Int)]
+convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Integer, Integer, Integer)]
 convertToMoves mvs = let numberedMoves = zip [1..] mvs
                       in
                          map (\(n, (color, (x,y))) -> (mapColor color, fromIntegral x, fromIntegral y, n)) numberedMoves
 
-mygoban ::  [(SGF.Color, (Integer, Integer, Integer))] -> Int  -> Diagram B
-mygoban = kifu
-
-stonePlacement:: [(GoPoint,GoStone)] ->  M.Map GoPoint Int -> [ (SGF.Color, (Integer, Integer, Integer))]
-stonePlacement stones moveMap = map (\(point, stone) -> (convertColor stone,  ( toInteger $ x point, toInteger $  y point, toInteger $ moveMap M.!  point ) ) ) stones
+stonePlacement:: [(GoPoint,GoStone)] ->  M.Map GoPoint Int -> [ (GoStone, Integer, Integer, Integer)]
+stonePlacement stones moveMap = map (\(point, stone) -> ( stone,   toInteger $ x point, toInteger $  y point, toInteger $ moveMap M.!  point  ) ) stones
 
 graduatedMoveList :: Int -> [a] -> [[a]]
 graduatedMoveList step items = let moveCount = length items
@@ -58,7 +55,7 @@ graduatedMoveList step items = let moveCount = length items
                                    in tail $ map (`take` items) moveExtents
 
 renderDiagram :: FilePath -> Diagram B -> IO ()
-renderDiagram outfile kifuDiagram = renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
+renderDiagram outfile = renderPdf 200 200 outfile (dims2D 200 200)
 
 renderDiagrams :: FilePath -> [Diagram B] -> IO ()
 renderDiagrams outfile [kifu] = renderDiagram outfile kifu
@@ -66,14 +63,14 @@ renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
 renderDiagrams outfile [a,b,c] = renderDiagram outfile $ a === b ||| c
 renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
-buildDiagram :: Int  ->  [(GoStone, Int, Int, Int)] -> Diagram B
+buildDiagram :: Integer  ->  [(GoStone, Integer, Integer, Integer)] -> Diagram B
 buildDiagram boardSize moves = let
       initialGoban = emptyBoard boardSize
       finalBoard = execState (playMoves moves) initialGoban
       gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
-   in mygoban gostones boardSize
+   in kifu gostones boardSize
 
-buildAndRenderDiagram :: Int -> FilePath ->  [(GoStone, Int, Int, Int)] -> IO ()
+buildAndRenderDiagram :: Integer -> FilePath ->  [(GoStone, Integer, Integer, Integer)] -> IO ()
 buildAndRenderDiagram boardSize outfile moves = let kifu = buildDiagram boardSize moves
                                                  in renderDiagram outfile kifu
 
