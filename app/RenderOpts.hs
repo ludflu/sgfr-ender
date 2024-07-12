@@ -23,7 +23,7 @@ parseOpts = RenderOpts <$>
        (long "diagramsPerPage"
           <> metavar "diagramsPerPage"
           <> showDefault
-          <> value 4
+          <> value 2
           <> help "how many diagrams to show on each page")
     <*> strOption ( long "input" 
           <> short 'i'

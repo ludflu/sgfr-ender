@@ -54,7 +54,7 @@ graduatedMoveList :: Int -> [a] -> [[a]]
 graduatedMoveList step items = let moveCount = length items
                                    stepCount = moveCount `div` step
                                    moveExtents = [i * step | i <- [0..stepCount]]
-                                   in map (`take` items) moveExtents
+                                   in tail $ map (`take` items) moveExtents
 
 renderDiagram :: FilePath -> Diagram B -> IO ()
 renderDiagram outfile kifuDiagram = renderPdf 200 200 outfile (dims2D 200 200) kifuDiagram
