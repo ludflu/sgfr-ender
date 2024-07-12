@@ -2,6 +2,15 @@
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (testCase, (@?=))
 import Goban
+    ( BoardState,
+      GoPoint(GoPoint),
+      GoStone(Black, Empty),
+      emptyBoard,
+      getStone,
+      findDragon,
+      libertyCount,
+      playBlack,
+      playWhite, getAllStones )
 import Control.Monad.State
 import Diagrams (place)
 import Test.Tasty.Providers (IsTest(run))
@@ -9,8 +18,6 @@ import Codec.Binary.UTF8.Generic (UTF8Bytes(empty))
 
 main :: IO ()
 main = defaultMain allTests
-
-
 
 makeDragon :: State BoardState [GoPoint]
 makeDragon = do playBlack 5 5
@@ -22,6 +29,17 @@ makeDragon = do playBlack 5 5
 stoneLiberties :: State BoardState Int
 stoneLiberties = do playBlack  5 5
                     libertyCount (GoPoint 5 5)
+
+
+lowerLeft :: State BoardState GoStone
+lowerLeft = do playBlack 15 3
+               getStone $ GoPoint 15 3
+
+
+lowerLeft2 :: State BoardState [(GoPoint,GoStone)]
+lowerLeft2 = do
+                playBlack 15 3
+                gets getAllStones
 
 pairStoneLiberties :: State BoardState Int
 pairStoneLiberties = do playBlack  5 5
@@ -53,22 +71,28 @@ testCalcBoundary =
   testGroup
     "goban tests" [
 
-        testCase "we should find a dragon" $ evalState makeDragon iboard  @?= 
+        testCase "we should find a dragon" $ evalState makeDragon iboard  @?=
             [GoPoint 5 5, GoPoint 6 5, GoPoint 7 5, GoPoint 8 5],
 
-        testCase "a lone stone should have 4 liberties" $ 
+        testCase "a lone stone should have 4 liberties" $
             evalState stoneLiberties iboard @?= 4,
-    
-        testCase "two stones should have 6 liberties" $ 
+
+        testCase "two stones should have 6 liberties" $
             evalState pairStoneLiberties iboard @?= 6,
 
-        testCase "a stone in atari should have zero liberties, get captured" $ 
+        testCase "a stone in atari should have zero liberties, get captured" $
             evalState atariStone iboard @?= Empty,
 
-        testCase "a stone in the corner should have 2 liberties" $ 
+        testCase "a stone in the corner should have 2 liberties" $
             evalState cornerStone iboard @?= 2,
 
-        testCase "a side stone should have 3 liberties" $ 
-            evalState sideStone iboard @?= 3
+        testCase "a side stone should have 3 liberties" $
+            evalState sideStone iboard @?= 3,
+
+        testCase "playing a stone should put it on the board" $
+            evalState lowerLeft iboard @?= Black,
+
+        testCase "playing a stone should put it on the board" $
+            evalState lowerLeft2 iboard @?= [(GoPoint 15 3, Black)]
 
     ]

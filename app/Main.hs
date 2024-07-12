@@ -29,13 +29,14 @@ import Options.Applicative
   )
 import Data.List.Split (chunksOf)
 
+import Control.Arrow hiding ((|||))
 
 mapColor :: SGF.Color -> GoStone
 mapColor SGF.Black = Black
 mapColor SGF.White = White
 
 convertColor ::  GoStone -> SGF.Color
-convertColor Black=SGF.Black 
+convertColor Black=SGF.Black
 convertColor White=SGF.White
 
 
@@ -66,7 +67,7 @@ renderDiagrams outfile [a,b,c] = renderDiagram outfile $ a === b ||| c
 renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
 buildDiagram :: Int  ->  [(GoStone, Int, Int, Int)] -> Diagram B
-buildDiagram boardSize moves = let 
+buildDiagram boardSize moves = let
       initialGoban = emptyBoard boardSize
       finalBoard = execState (playMoves moves) initialGoban
       gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
@@ -81,14 +82,16 @@ run renderOpts  = do
   sgf <- readSgf (input renderOpts)
   let boardSize = 18
       pdfDims = 200
-      moves =  renderReady sgf
-      gobanMoves = convertToMoves moves
-      outfile = output renderOpts
-      movestack = graduatedMoveList (movesPerDiagram renderOpts) gobanMoves
+      process = renderReady >>> convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
+      movestack = process sgf
       numberedMoveList = zip [1..] movestack
       allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
-   in mapM_ (\(i, kifu) -> renderDiagrams (outfile ++ "-" ++ show i ++ ".pdf") kifu) chunkedKifus
+  --  print moves
+   in do print $ head numberedMoveList
+         print "-------------"
+         print sgf
+         mapM_ (\(i, kifu) -> renderDiagrams (output renderOpts ++ "-" ++ show i ++ ".pdf") kifu) chunkedKifus
 
 main :: IO ()
 main = run =<< execParser opts

@@ -129,7 +129,7 @@ isCapturable :: GoPoint -> State BoardState Bool
 isCapturable p = do libertyCount <- libertyCount p
                     return $ libertyCount == 0
 
-playStone :: GoStone -> GoPoint ->  State BoardState ()
+playStone :: GoStone -> GoPoint -> State BoardState ()
 playStone stone point = do placeStone stone point
                            enemies <- neighborsEnemies point
                            captureAble <- filterM isCapturable enemies
