@@ -75,7 +75,7 @@ renderDiagram outfile d =  let centeredD = d # centerXY # pad 1.1
 renderDiagrams :: FilePath -> [Diagram B] -> IO ()
 renderDiagrams outfile [kifu] = renderDiagram outfile kifu
 renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
-renderDiagrams outfile [a,b,c] = renderDiagram outfile $ twoUp a b ||| c
+renderDiagrams outfile [a,b,c] = renderDiagram outfile $ fourUp a b c mempty
 renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
 buildDiagram :: Integer  ->  [(GoStone, Integer, Integer, Integer)] -> Diagram B
