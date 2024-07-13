@@ -14,11 +14,24 @@ import           Prelude                     hiding (getContents, (!!))
 import Data.Maybe ( mapMaybe, fromMaybe )
 import System.IO (getContents)
 
+
+import Data.Set (Set)
+import qualified Data.Set as Set
+-- import qualified Data.Foldable as bmoves
+
 (!!) = genericIndex
 
 grabTree :: [Word8] -> TreeGo
 grabTree s = case runParser collection () "stdin" s of
   Right ([Game {tree = TreeGo t}], _) -> t
+
+
+
+grabSetup :: TreeGo -> [MoveGo]
+grabSetup
+  n = [Set.toList bmoves  | Left Setup {addBlack = bmoves, addWhite=wmoves, remove = removePoints} <- mainLine]
+    where
+      mainLine = map action . head . transpose . levels $ n
 
 grabMoves :: TreeGo -> [MoveGo]
 grabMoves
@@ -60,7 +73,7 @@ getCoords move = case move of
 
 addColors :: [m] -> [(Color, m)]
 addColors moves = let moveCount = length moves
-                      colors = take moveCount $ concat $ replicate moveCount [Data.SGF.Black, Data.SGF.White]
+                      colors = take moveCount $ concat $ replicate moveCount [Black, White]
                    in zip colors moves
 
 renderReady :: [MoveGo] -> [(Color, (Integer,Integer))]
