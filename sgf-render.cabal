@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               sgf-render
-version:            1.2
+version:            1.3
 synopsis: a library for rendering SGF (Smart Game Format) files into kifu diagrams
 description: 
   The sgf-render package reads SGF (Smart Game Format) files and renders them into a series of 
