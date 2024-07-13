@@ -57,6 +57,11 @@ placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagr
 placeWhiteStones = let dgm = circle (cSize / 2) # fc white # opacity 1.0 # lw 0.2
                       in placeDiagramOnGrid dgm
 
+starPoints :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+starPoints = let dgm = circle (cSize / 5) # fc black # opacity 1.0 # lw 0.2
+                      in placeDiagramOnGrid dgm
+
+
 moveNumberLabel :: String ->  QDiagram B V2 Double Any
 moveNumberLabel t   -- as the number of the move increases, the label should get smaller
         | length t == 1 = text t # fontSize (local 0.026)
@@ -73,6 +78,9 @@ twoUp a b = a ||| b
 fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
 fourUp a b c d = twoUp a b === twoUp c d
 
+starPointLocations :: [(Int, Int)]
+starPointLocations = map (uncurry tfm) ([(3,3),(15,15),(15,3),(3,15)] ++ [ (3,9),(9,3),(9,9),(3,3)]  ++ [(15,9), (9,15),(9,9),(15,15)])
+
 kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
     where
@@ -83,8 +91,10 @@ kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
         last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
         last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
         bd = gridWithHalves' myGridOpts  (fromIntegral size) (fromIntegral size)
+                            # starPoints starPointLocations         
                             # placeWhiteStones whitePoints
-                            # placeBlackStones blackPoints                          
+                            # placeBlackStones blackPoints
+
         boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Locations
 
