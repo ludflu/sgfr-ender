@@ -1,12 +1,14 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE TypeFamilies              #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+
 
 module Main where
 
 import Kifu                        (kifu, twoUp, fourUp)
 import RenderOpts
-import Diagrams.Backend.Rasterific (B, renderPdf)
+import Diagrams.Backend.Rasterific (B, renderPdf, renderPdfBSWithDPI)
 import Diagrams.TwoD (dims2D)
 import SgfReader (readSgf, showMoves)
 import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoint (x, y), BoardState (moveNumberMap) )
@@ -58,13 +60,21 @@ graduatedMoveList step items = let moveCount = length items
                                    moveExtents = [i * step | i <- [0..stepCount]]
                                    in tail $ map (`take` items) moveExtents
 
+dpi = 96
+widthInInches = 8.5
+heightInInches = 11.0
+widthInPixels :: Int = round $ widthInInches * dpi
+heightInPixels ::Int = round $ heightInInches * dpi
+
+diagramSize :: Double = fromIntegral widthInPixels * 0.75
+
 renderDiagram :: FilePath -> Diagram B -> IO ()
-renderDiagram outfile = renderPdf 200 200 outfile (dims2D 200 200)
+renderDiagram outfile =  renderPdf widthInPixels heightInPixels outfile (dims2D diagramSize diagramSize)
 
 renderDiagrams :: FilePath -> [Diagram B] -> IO ()
 renderDiagrams outfile [kifu] = renderDiagram outfile kifu
 renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
-renderDiagrams outfile [a,b,c] = renderDiagram outfile $ a === b ||| c
+renderDiagrams outfile [a,b,c] = renderDiagram outfile $ twoUp a b ||| c
 renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
 buildDiagram :: Integer  ->  [(GoStone, Integer, Integer, Integer)] -> Diagram B

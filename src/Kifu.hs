@@ -8,13 +8,14 @@ import Diagrams.TwoD.Grid ( gridWithHalves, gridWithHalves', placeDiagramOnGrid,
 import           Diagrams.TwoD.Text
 import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc, lw, none, opacity, red, black, white, yellow,
-                                     (#), (===), (|||), rect, centerXY, square, atop, Default (def), thin, r2, named, IsName, local, Colour, )
+                                     (#), (===), (|||), rect, centerXY, square, atop, Default (def), thin, r2, named, IsName, local, Colour, hcat', (.~), (&), )
 import           Diagrams.Backend.Rasterific (B, renderPdf)
 
 import qualified Data.SGF  as SGF
 import Data.List (sortBy, sortOn)
 import Data.Ord (comparing, Down (Down))
 import Goban (GoStone(Black, White))
+import Diagrams (with, sep, vcat')
 
 cSize :: Double
 cSize = 0.045
@@ -73,10 +74,10 @@ ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
 ann x y color number = annotate number moveNumberLabel color x y
 
 twoUp :: Diagram B -> Diagram B -> Diagram B
-twoUp a b = a ||| b
+twoUp a b = hcat' (with & sep .~ 0.15) [a,b]
 
 fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
-fourUp a b c d = twoUp a b === twoUp c d
+fourUp a b c d = vcat'  (with & sep .~ 0.15) [twoUp a b,  twoUp c d]
 
 starPointLocations :: [(Int, Int)]
 starPointLocations = map (uncurry tfm) ([(3,3),(15,15),(15,3),(3,15)] ++ [ (3,9),(9,3),(9,9),(3,3)]  ++ [(15,9), (9,15),(9,9),(15,15)])
