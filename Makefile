@@ -23,6 +23,14 @@ run9:
 		--movesPerDiagram 50 \
 		--diagramsPerPage 4
 
+run13:
+	sgf-render \
+		-i ./58773515-120-ludflu215-jjprnty.sgf \
+		-o test/outtest \
+		--movesPerDiagram 50 \
+		--diagramsPerPage 4
+
+
 
 combine:
 	rm -f all.pdf
