@@ -11,7 +11,7 @@ import           Data.SGF
 import           Data.Tree
 import           Kifu
 import           Prelude                     hiding (getContents, (!!))
-import Data.Maybe ( mapMaybe, fromMaybe )
+import Data.Maybe ( mapMaybe, fromMaybe, fromJust )
 import System.IO (getContents)
 
 
@@ -20,6 +20,10 @@ import qualified Data.Set as Set
 import qualified Data.SGF as SGF
 
 (!!) = genericIndex
+
+grabGameInfo :: [Word8] -> Maybe (Integer, Integer)
+grabGameInfo s = case runParser collection () "stdin" s of
+  Right ([Game {tree = TreeGo t, size =sz}], _) -> sz
 
 grabTree :: [Word8] -> TreeGo
 grabTree s = case runParser collection () "stdin" s of
@@ -51,6 +55,9 @@ grabMoves
 
 parse :: ByteString -> [(Color,MoveGo)]
 parse = grabMoves . grabTree . unpack
+
+parseGameInfo :: ByteString -> Maybe (Integer, Integer)
+parseGameInfo= grabGameInfo  . unpack
 
 parseBlackSetupMoves :: ByteString -> [MoveGo]
 parseBlackSetupMoves = grabBlackSetup. grabTree. unpack
@@ -93,13 +100,15 @@ addColors moves = let moveCount = length moves
                    in zip colors moves
 
 
-readSgf ::  FilePath -> IO [(Color,MoveGo)]
+readSgf ::  FilePath -> IO (Integer, [(Color,MoveGo)])
 readSgf path = do
   rawSgfData <- readFile path
   let sgfData = BSU.fromString rawSgfData
+  let sz = fst $ fromMaybe  (19,19) $ parseGameInfo sgfData
   let gameMoves = parse sgfData
   let blackSetup = map ((,) SGF.Black) (parseBlackSetupMoves sgfData)
   let whiteSetup = map ((,) SGF.White) (parseWhiteSetupMoves sgfData)
-  return $ blackSetup ++ whiteSetup ++ gameMoves
+  let moves = blackSetup ++ whiteSetup ++ gameMoves
+  return (sz, moves)
 
 

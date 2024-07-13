@@ -96,10 +96,8 @@ makeFileName prefix pageNumber = let pnum = printf "%05d" pageNumber
 
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
-  sgf <- readSgf (input renderOpts)
-  let boardSize = 18
-      pdfDims = 200
-      process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
+  (boardSize,sgf) <- readSgf (input renderOpts)
+  let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
       numberedMoveList = zip [1..] movestack
       allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList

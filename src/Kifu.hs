@@ -71,15 +71,15 @@ moveNumberLabel t   -- as the number of the move increases, the label should get
         | length t > 2  = text t # fontSize (local 0.016)
 
 
-vertLabelLocations :: [(Integer, Integer, String)]
-vertLabelLocations = let vert = reverse [0..18]
-                      in map (\t -> (0, t, show (19-t))) vert
+vertLabelLocations :: Integer -> [(Integer, Integer, String)]
+vertLabelLocations boardSize = let vert = reverse [0..boardSize-1]
+                      in map (\t -> (0, t, show (boardSize-t))) vert
 
-horzLabelLocations :: [(Integer, Integer, String)]
-horzLabelLocations = let horz = [0..18]
-                         letters = map (: []) ['A'..'T']
-                         noI = filter (/= "I") letters
-                      in map (\t -> (t, 18, noI !! fromInteger t)) horz
+horzLabelLocations :: Integer -> [(Integer, Integer, String)]
+horzLabelLocations boardSize = let horz = [0..boardSize-1]
+                                   letters = map (: []) ['A'..'T']
+                                   noI = take (fromInteger boardSize) $ filter (/= "I") letters
+                                in map (\t -> (t, boardSize-1, noI !! fromInteger t)) horz
 
 
 ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
@@ -105,7 +105,7 @@ starPointLocations :: [(Int, Int)]
 starPointLocations = map (uncurry tfm) ([(3,3),(15,15),(15,3),(3,15)] ++ [ (3,9),(9,3),(9,9),(3,3)]  ++ [(15,9), (9,15),(9,9),(15,15)])
 
 kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
-kifu moves size = centerXY labeledXBoard <> centerXY woodenBoard
+kifu moves boardSize = centerXY labeledXBoard <> centerXY woodenBoard
     where
         blackMoves = filter isBlack moves
         whiteMoves = filter isWhite moves
@@ -113,7 +113,7 @@ kifu moves size = centerXY labeledXBoard <> centerXY woodenBoard
         whitePoints = map transformMovetoBoard whiteMoves
         last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
         last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
-        bd = gridWithHalves' myGridOpts  (fromIntegral size) (fromIntegral size)
+        bd = gridWithHalves' myGridOpts  (fromIntegral boardSize-1) (fromIntegral boardSize-1)
                             # starPoints starPointLocations
                             # placeWhiteStones whitePoints
                             # placeBlackStones blackPoints
@@ -123,7 +123,7 @@ kifu moves size = centerXY labeledXBoard <> centerXY woodenBoard
 
 
         labeledYBoard  = foldl (\acc (x,y,n) -> let (x',y') = tfm x y
-                                              in acc # annSide x' y' black n)  boardDiagram vertLabelLocations
+                                              in acc # annSide x' y' black n)  boardDiagram $ vertLabelLocations boardSize
 
         labeledXBoard  = foldl (\acc (x,y,n) -> let (x',y') = tfm x y
-                                              in acc # annBottom x' y' black n)  labeledYBoard horzLabelLocations
+                                              in acc # annBottom x' y' black n)  labeledYBoard $ horzLabelLocations boardSize

@@ -9,12 +9,20 @@ clean:
 	rm -f test/*.pdf
 	rm -f all.pdf
 
-run:
+run19:
 	sgf-render \
 		-i ./65761210-307-mannesmann-ludflu215.sgf \
 		-o test/outtest \
 		--movesPerDiagram 50 \
 		--diagramsPerPage 4
+
+run9:
+	sgf-render \
+		-i ./41312474-050-ludflu215-jjprnty.sgf \
+		-o test/outtest \
+		--movesPerDiagram 50 \
+		--diagramsPerPage 4
+
 
 combine:
 	rm -f all.pdf
