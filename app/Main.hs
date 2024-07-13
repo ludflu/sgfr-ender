@@ -18,6 +18,7 @@ import Control.Monad.State ( execState )
 import Diagrams (Renderable)
 import Diagrams.Prelude hiding (output)
 import Diagrams.Backend.Rasterific.CmdLine
+
 import Data.Maybe (catMaybes, fromMaybe)
 import Options.Applicative
   ( Alternative (empty),

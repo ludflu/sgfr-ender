@@ -1,30 +1,22 @@
 cabal-version:      2.4
 name:               sgf-render
-version:            0.1.0.0
+version:            1.2
+synopsis: a library for rendering SGF (Smart Game Format) files into kifu diagrams
+description: 
+  The sgf-render package reads SGF (Smart Game Format) files and renders them into a series of 
+  kifu diagrams, suitable for game review. It support 19x19, 13x13, and 9x9 board sizes.
+  The package is written in Haskell and uses the diagrams library for rendering.
 
--- Global GHC options (applied to all components)
+bug-reports:        https://github.com/ludflu/sgfr-ender/issues
+category:           Graphics
+license-file:       LICENSE
+author:             Jim Snavely <ludflu@gmail.com>
+maintainer:         Jim Snavely <ludflu@gmail.com>
+copyright:          (C) 2024 Jim Snavely. All rights reserved.
+
+
 common common-options
   ghc-options: -Wall -fno-warn-noncanonical-monad-instances
-
-
--- A short (one-line) description of the package.
--- synopsis:
-
--- A longer description of the package.
--- description:
-
--- A URL where users can report bugs.
--- bug-reports:
-
--- The license under which the package is released.
--- license:
-author:             Jim Snavely
-maintainer:         ludflu@gmail.com
-
--- A copyright notice.
--- copyright:
--- category:
-extra-source-files: CHANGELOG.md
 
 library kifu
   exposed-modules:     Kifu, SgfReader, Goban
@@ -45,11 +37,6 @@ library kifu
 
 executable sgf-render
     main-is:          Main.hs
-    -- exposed-modules:  Main, RenderOpts
-
-    -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
-    --build-depends:   base ^>=4.16.4.0,
     other-modules:    RenderOpts
     build-depends:    base,
                       kifu,
