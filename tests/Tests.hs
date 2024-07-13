@@ -43,11 +43,6 @@ lowerLeft2 = do
                 playBlack 15 3
                 gets getAllStones
 
--- renderOneStone :: IO ()
--- renderOneStone = let (stones,state) = runState lowerLeft2 iboard
---                      gostones = stonePlacement (getAllStones state) (moveNumberMap state)
---                   in buildAndRenderDiagram 18 "/tmp/testout.pdf" gostones
-
 pairStoneLiberties :: State BoardState Int
 pairStoneLiberties = do playBlack  5 5
                         playBlack  5 6

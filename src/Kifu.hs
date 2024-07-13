@@ -2,20 +2,21 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE TypeFamilies              #-}
+{-# LANGUAGE ScopedTypeVariables              #-}
 
 module Kifu where
 import Diagrams.TwoD.Grid ( gridWithHalves, gridWithHalves', placeDiagramOnGrid, GridOpts (..), annotate )
 import           Diagrams.TwoD.Text
 import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc, lw, none, opacity, red, black, white, yellow,
-                                     (#), (===), (|||), rect, centerXY, square, atop, Default (def), thin, r2, named, IsName, local, Colour, hcat', (.~), (&), )
+                                     (#), (===), (|||), rect, centerXY, square, atop, Default (def), thin, r2, named, IsName, local, Colour, hcat', (.~), (&), padX, alignB, )
 import           Diagrams.Backend.Rasterific (B, renderPdf)
 
 import qualified Data.SGF  as SGF
 import Data.List (sortBy, sortOn)
 import Data.Ord (comparing, Down (Down))
 import Goban (GoStone(Black, White))
-import Diagrams (with, sep, vcat')
+import Diagrams (with, sep, vcat', alignL, pad)
 
 cSize :: Double
 cSize = 0.045
@@ -37,7 +38,7 @@ transformMovetoBoard :: (a, Integer, Integer, Integer) -> (Int,Int)
 transformMovetoBoard (_, x',y', n) = tfm x' y'
 
 woodenBoard ::  QDiagram B V2 Double Any
-woodenBoard  = square 1.1  # lw none # fc yellow # opacity 0.5
+woodenBoard  = square 1.15  # lw none # fc yellow # opacity 0.5
 
 myGridOpts :: (Floating n, Ord n) => GridOpts n
 myGridOpts = GridOpts
@@ -70,8 +71,27 @@ moveNumberLabel t   -- as the number of the move increases, the label should get
         | length t > 2  = text t # fontSize (local 0.016)
 
 
+vertLabelLocations :: [(Integer, Integer, String)]
+vertLabelLocations = let vert = reverse [0..18]
+                      in map (\t -> (0, t, show (19-t))) vert
+
+horzLabelLocations :: [(Integer, Integer, String)]
+horzLabelLocations = let horz = [0..18]
+                         letters = map (: []) ['A'..'T']
+                         noI = filter (/= "I") letters
+                      in map (\t -> (t, 18, noI !! fromInteger t)) horz
+
+
 ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
 ann x y color number = annotate number moveNumberLabel color x y
+
+annSide :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
+annSide x y color number = let lbn n = text (n++ "            ") # fontSize (local 0.020) # alignL
+                            in annotate number lbn color x y
+
+annBottom :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
+annBottom x y color number = let lbn n = vcat' (with & sep .~ 0.04) [ text " " # fontSize (local 0.020) , text n # fontSize (local 0.020) ]
+                            in annotate number lbn color x y
 
 twoUp :: Diagram B -> Diagram B -> Diagram B
 twoUp a b = vcat' (with & sep .~ 0.15) [a,b]
@@ -85,7 +105,7 @@ starPointLocations :: [(Int, Int)]
 starPointLocations = map (uncurry tfm) ([(3,3),(15,15),(15,3),(3,15)] ++ [ (3,9),(9,3),(9,9),(3,3)]  ++ [(15,9), (9,15),(9,9),(15,15)])
 
 kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
-kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
+kifu moves size = centerXY labeledXBoard <> centerXY woodenBoard
     where
         blackMoves = filter isBlack moves
         whiteMoves = filter isWhite moves
@@ -94,10 +114,16 @@ kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
         last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
         last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
         bd = gridWithHalves' myGridOpts  (fromIntegral size) (fromIntegral size)
-                            # starPoints starPointLocations         
+                            # starPoints starPointLocations
                             # placeWhiteStones whitePoints
                             # placeBlackStones blackPoints
 
         boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Locations
 
+
+        labeledYBoard  = foldl (\acc (x,y,n) -> let (x',y') = tfm x y
+                                              in acc # annSide x' y' black n)  boardDiagram vertLabelLocations
+
+        labeledXBoard  = foldl (\acc (x,y,n) -> let (x',y') = tfm x y
+                                              in acc # annBottom x' y' black n)  labeledYBoard horzLabelLocations

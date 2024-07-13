@@ -7,12 +7,13 @@ test:
 
 clean:
 	rm -f test/*.pdf
+	rm -f all.pdf
 
 run:
 	sgf-render \
 		-i ./65761210-307-mannesmann-ludflu215.sgf \
 		-o test/outtest \
-		--movesPerDiagram 5 \
+		--movesPerDiagram 50 \
 		--diagramsPerPage 4
 
 combine:
