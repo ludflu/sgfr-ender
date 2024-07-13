@@ -2,6 +2,7 @@ module RenderOpts where
 
 import Data.Maybe 
 import Options.Applicative
+import Text.Read (readEither)
 
 data RenderOpts = RenderOpts {
     movesPerDiagram :: Int,
@@ -10,6 +11,15 @@ data RenderOpts = RenderOpts {
     output :: FilePath
     } deriving (Show)
 
+-- Define the custom parser
+validateDiagramsPerPage :: Int -> Either String Int
+validateDiagramsPerPage val 
+      | val >0 && val <=4 = Right val
+      | otherwise = Left "diagramsPerPage must be between 1 and 4."
+
+parseDiagramsPerPage :: String -> Either String Int
+parseDiagramsPerPage dpp = do i <- readEither dpp    
+                              validateDiagramsPerPage i
 
 parseOpts :: Parser RenderOpts
 parseOpts = RenderOpts <$>
@@ -19,7 +29,7 @@ parseOpts = RenderOpts <$>
           <> showDefault
           <> value 5
           <> help "how many moves to show in each diagram")
-    <*> option auto 
+    <*> option (eitherReader parseDiagramsPerPage) 
        (long "diagramsPerPage"
           <> metavar "diagramsPerPage"
           <> showDefault
