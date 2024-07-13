@@ -60,7 +60,7 @@ getCoords move = case move of
 
 addColors :: [m] -> [(Color, m)]
 addColors moves = let moveCount = length moves
-                      colors = concat $ replicate moveCount [Data.SGF.Black,Data.SGF.White]
+                      colors = take moveCount $ concat $ replicate moveCount [Data.SGF.Black, Data.SGF.White]
                    in zip colors moves
 
 renderReady :: [MoveGo] -> [(Color, (Integer,Integer))]

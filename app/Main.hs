@@ -87,7 +87,7 @@ run renderOpts  = do
   --  print moves
    in do print $ head numberedMoveList
          print "-------------"
-         print sgf
+         print movestack
          mapM_ (\(i, kifu) -> renderDiagrams (output renderOpts ++ "-" ++ show i ++ ".pdf") kifu) chunkedKifus
 
 main :: IO ()

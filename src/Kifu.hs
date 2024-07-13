@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies              #-}
 
 module Kifu where
-import Diagrams.TwoD.Grid ( gridWithHalves', placeDiagramOnGrid, GridOpts (..), annotate )
+import Diagrams.TwoD.Grid ( gridWithHalves, gridWithHalves', placeDiagramOnGrid, GridOpts (..), annotate )
 import           Diagrams.TwoD.Text
 import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc, lw, none, opacity, red, black, white, yellow,
@@ -49,18 +49,26 @@ myGridOpts = GridOpts
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-placeBlackStones n = let dgm = circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1
+placeBlackStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeBlackStones = let dgm = circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1
                       in placeDiagramOnGrid dgm
 
 
-placeWhiteStones n = let dgm = circle (cSize / 2) # fc white  # opacity 1.0 # lw 0.2
+placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeWhiteStones = let dgm = circle (cSize / 2) # fc white # opacity 1.0 # lw 0.2
                       in placeDiagramOnGrid dgm
 
+
+placeDummy :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeDummy = placeDiagramOnGrid $ circle (cSize / 2) # fc white # opacity 0.0 # lw 0.2
+
+dummyPoint :: [(Int, Int)]
+dummyPoint = [(0,0)]
 
 txtPt :: String ->  QDiagram B V2 Double Any
 txtPt t = text t # fontSize (local 0.023)
 
-ann :: Int -> Int -> Colour Double -> String -> QDiagram B V2 Double Any -> QDiagram B V2 Double Any
+ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
 ann x y color number = annotate number txtPt color x y
 
 twoUp :: Diagram B -> Diagram B -> Diagram B
@@ -69,21 +77,21 @@ twoUp a b = a === b
 fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
 fourUp a b c d = twoUp a b ||| twoUp c d
 
+
 kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
     where
-        blackMoves = filter isWhite moves
-        whiteMoves = filter isBlack moves
-        blackPoints = map  transformMovetoBoard  blackMoves
-        whitePoints = map  transformMovetoBoard  whiteMoves
+        blackMoves = filter isBlack moves
+        whiteMoves = filter isWhite moves
+        blackPoints = map transformMovetoBoard blackMoves
+        whitePoints = map transformMovetoBoard whiteMoves
         last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_, _, x) -> x)) moves
         last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
-
-
-        bd = gridWithHalves' myGridOpts  (fromIntegral size)  (fromIntegral size)
-                            # placeBlackStones "123" blackPoints
-                            # placeWhiteStones "321" whitePoints
-
-        boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
-                                                        in acc # ann  x'  y' (mapColor color) (show n) ) bd last5Locations
+        boardDiagram = gridWithHalves' myGridOpts  (fromIntegral size) (fromIntegral size)
+                            # placeDummy dummyPoint
+                            # placeWhiteStones whitePoints
+                            # placeBlackStones blackPoints
+                          
+        -- boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
+        --                                                  in acc # ann x'  y' (mapColor color) (show n) ) bd last5Locations
 
