@@ -1,5 +1,7 @@
 # sgfr-ender - render board diagrams from your SGF game record
 
+![image](https://github.com/user-attachments/assets/590d0f00-9961-41fd-b476-bf4054b5157a)
+
 ## Running
 ```
 sgf-render - render sgf files to pdf
