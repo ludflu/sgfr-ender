@@ -16,51 +16,50 @@ import Control.Monad.State
 import Diagrams (place)
 import Test.Tasty.Providers (IsTest(run))
 import Codec.Binary.UTF8.Generic (UTF8Bytes(empty))
--- import Main (buildAndRenderDiagram, stonePlacement)
 
 main :: IO ()
 main = defaultMain allTests
 
 makeDragon :: State BoardState [GoPoint]
-makeDragon = do playBlack 5 5
-                playBlack  6 5
-                playBlack  7 5
-                playBlack  8 5
+makeDragon = do playBlack 5 5 $ Just 1
+                playBlack  6 5 $ Just 2
+                playBlack  7 5 $ Just 3
+                playBlack  8 5 $ Just 4
                 findDragon (GoPoint 5 5)
 
 stoneLiberties :: State BoardState Int
-stoneLiberties = do playBlack  5 5
+stoneLiberties = do playBlack  5 5 $ Just 1
                     libertyCount (GoPoint 5 5)
 
 
 lowerLeft :: State BoardState GoStone
-lowerLeft = do playBlack 15 3
+lowerLeft = do playBlack 15 3 $ Just 1
                getStone $ GoPoint 15 3
 
 
 lowerLeft2 :: State BoardState [(GoPoint,GoStone)]
 lowerLeft2 = do
-                playBlack 15 3
+                playBlack 15 3 $ Just 1
                 gets getAllStones
 
 pairStoneLiberties :: State BoardState Int
-pairStoneLiberties = do playBlack  5 5
-                        playBlack  5 6
+pairStoneLiberties = do playBlack  5 5 $ Just 1
+                        playBlack  5 6 $ Just 2
                         libertyCount (GoPoint 5 5)
 
 
 atariStone :: State BoardState GoStone
-atariStone = do playBlack  5 5
-                playWhite  4 5
-                playWhite  6 5
-                playWhite  5 4
-                playWhite  5 6
+atariStone = do playBlack  5 5 $ Just 1
+                playWhite  4 5 $ Just 2
+                playWhite  6 5 $ Just 3
+                playWhite  5 4 $ Just 4
+                playWhite  5 6 $ Just 5
                 getStone (GoPoint 5 5)
 
-cornerStone = do playBlack  0 0
+cornerStone = do playBlack  0 0 $ Just 1
                  libertyCount (GoPoint 0 0)
 
-sideStone = do playBlack  5 0
+sideStone = do playBlack  5 0 $ Just 1
                libertyCount (GoPoint 5 0)
 
 allTests :: TestTree
