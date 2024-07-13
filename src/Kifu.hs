@@ -74,10 +74,12 @@ ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
 ann x y color number = annotate number moveNumberLabel color x y
 
 twoUp :: Diagram B -> Diagram B -> Diagram B
-twoUp a b = hcat' (with & sep .~ 0.15) [a,b]
+twoUp a b = vcat' (with & sep .~ 0.15) [a,b]
 
 fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
-fourUp a b c d = vcat'  (with & sep .~ 0.15) [twoUp a b,  twoUp c d]
+fourUp a b c d = let top = hcat' (with & sep .~ 0.15) [a,b]
+                     bottom = hcat' (with & sep .~ 0.15) [c,d]
+                  in twoUp top bottom
 
 starPointLocations :: [(Int, Int)]
 starPointLocations = map (uncurry tfm) ([(3,3),(15,15),(15,3),(3,15)] ++ [ (3,9),(9,3),(9,9),(3,3)]  ++ [(15,9), (9,15),(9,9),(15,15)])
