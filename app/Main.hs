@@ -32,6 +32,7 @@ import Options.Applicative
 import Data.List.Split (chunksOf)
 
 import Control.Arrow hiding ((|||))
+import Text.Printf (printf)
 
 mapColor :: SGF.Color -> GoStone
 mapColor SGF.Black = Black
@@ -90,7 +91,8 @@ buildAndRenderDiagram boardSize outfile moves = let kifu = buildDiagram boardSiz
                                                  in renderDiagram outfile kifu
 
 makeFileName :: String -> Integer -> String
-makeFileName prefix pageNumber = prefix ++ "-" ++ show pageNumber ++ ".pdf"
+makeFileName prefix pageNumber = let pnum = printf "%05d" pageNumber
+                                  in prefix ++ "-" ++ pnum ++ ".pdf"
 
 run :: RenderOpts  -> IO ()
 run renderOpts  = do

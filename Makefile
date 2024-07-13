@@ -6,11 +6,18 @@ test:
 	cabal test
 
 clean:
-	rm test/*.pdf
+	rm -f test/*.pdf
 
 run:
 	sgf-render \
 		-i ./65761210-307-mannesmann-ludflu215.sgf \
 		-o test/outtest \
-		--movesPerDiagram 25 \
-		--diagramsPerPage 3
+		--movesPerDiagram 5 \
+		--diagramsPerPage 4
+
+combine:
+	rm -f all.pdf
+	pdftk test/outtest* cat output all.pdf
+
+debug:
+	cabal repl sgf-render
