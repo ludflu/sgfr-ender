@@ -79,7 +79,7 @@ showMoves :: [MoveGo] -> String
 showMoves = unlines . showMoves' 1
   where
     showMoves' n [] = []
-    showMoves' n [m] = unwords [show n ++ ".", showMove m] : []
+    showMoves' n [m] = [unwords [show n ++ ".", showMove m]]
     showMoves' n (m : m' : ms) = unwords [show n ++ ".", showMove m, showMove m'] : showMoves' (n + 2) ms
 
 getCoords :: MoveGo -> Maybe (Integer,Integer)

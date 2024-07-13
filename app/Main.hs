@@ -50,7 +50,7 @@ convertToMoves mvs =  let onlyMoves = catMaybes $ map (\(c, m) -> mg c m) mvs
                        in map (\((s,x,y),n) -> (s,x,y,n)) numberedMoves
 
 stonePlacement:: [(GoPoint,GoStone)] ->  M.Map GoPoint Int -> [ (GoStone, Integer, Integer, Integer)]
-stonePlacement stones moveMap = map (\(point, stone) -> ( stone,   toInteger $ x point, toInteger $  y point, toInteger $ moveMap M.!  point  ) ) stones
+stonePlacement stones moveMap = map (\(point, stone) -> ( stone,   toInteger $ x point, toInteger $  y point, toInteger $ moveMap M.! point  ) ) stones
 
 graduatedMoveList :: Int -> [a] -> [[a]]
 graduatedMoveList step items = let moveCount = length items

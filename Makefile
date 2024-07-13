@@ -13,4 +13,4 @@ run:
 		-i ./65761210-307-mannesmann-ludflu215.sgf \
 		-o test/outtest \
 		--movesPerDiagram 5 \
-		--diagramsPerPage 2
+		--diagramsPerPage 4

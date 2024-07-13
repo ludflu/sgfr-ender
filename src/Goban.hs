@@ -39,7 +39,7 @@ emptyBoard boardSize = let points = [GoPoint x y | x <- [0..boardSize], y <- [0.
                 in BoardState { 
                     board = M.fromList $ zip points (repeat Empty), 
                     moveNumberMap = M.empty,
-                    moveNumber = 0,
+                    moveNumber = 1,
                     boardSize = boardSize }
 
 isOnBoard :: Integer -> GoPoint ->  Bool

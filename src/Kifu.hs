@@ -64,10 +64,10 @@ ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
 ann x y color number = annotate number txtPt color x y
 
 twoUp :: Diagram B -> Diagram B -> Diagram B
-twoUp a b = a === b
+twoUp a b = a ||| b
 
 fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
-fourUp a b c d = twoUp a b ||| twoUp c d
+fourUp a b c d = twoUp a b === twoUp c d
 
 kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
