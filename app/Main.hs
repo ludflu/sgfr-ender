@@ -16,7 +16,7 @@ import Control.Monad.State ( execState )
 import Diagrams (Renderable)
 import Diagrams.Prelude hiding (output)
 import Diagrams.Backend.Rasterific.CmdLine
-import Data.Maybe (mapMaybe, fromMaybe)
+import Data.Maybe (catMaybes, fromMaybe)
 import Options.Applicative
   ( Alternative (empty),
     execParser,
@@ -40,10 +40,14 @@ convertColor Black=SGF.Black
 convertColor White=SGF.White
 
 
-convertToMoves ::  [(SGF.Color, (Integer, Integer))] -> [(GoStone, Integer, Integer, Integer)]
-convertToMoves mvs = let numberedMoves = zip [1..] mvs
-                      in
-                         map (\(n, (color, (x,y))) -> (mapColor color, fromIntegral x, fromIntegral y, n)) numberedMoves
+mg :: SGF.Color -> SGF.MoveGo  -> Maybe (GoStone, Integer,Integer)
+mg c (SGF.Play (x,y)) = Just (mapColor c,x,y)
+mg c SGF.Pass = Nothing
+
+convertToMoves ::  [(SGF.Color, SGF.MoveGo)] -> [(GoStone, Integer, Integer, Integer)]
+convertToMoves mvs =  let onlyMoves = catMaybes $ map (\(c, m) -> mg c m) mvs
+                          numberedMoves = zip onlyMoves [1..]
+                       in map (\((s,x,y),n) -> (s,x,y,n)) numberedMoves
 
 stonePlacement:: [(GoPoint,GoStone)] ->  M.Map GoPoint Int -> [ (GoStone, Integer, Integer, Integer)]
 stonePlacement stones moveMap = map (\(point, stone) -> ( stone,   toInteger $ x point, toInteger $  y point, toInteger $ moveMap M.!  point  ) ) stones
