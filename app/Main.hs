@@ -66,10 +66,11 @@ heightInInches = 11.0
 widthInPixels :: Int = round $ widthInInches * dpi
 heightInPixels ::Int = round $ heightInInches * dpi
 
-diagramSize :: Double = fromIntegral widthInPixels * 0.75
+diagramSize :: Double = fromIntegral widthInPixels
 
 renderDiagram :: FilePath -> Diagram B -> IO ()
-renderDiagram outfile =  renderPdf widthInPixels heightInPixels outfile (dims2D diagramSize diagramSize)
+renderDiagram outfile d =  let centeredD = d # centerXY # pad 1.1
+                            in renderPdf widthInPixels heightInPixels outfile (dims2D diagramSize diagramSize) centeredD
 
 renderDiagrams :: FilePath -> [Diagram B] -> IO ()
 renderDiagrams outfile [kifu] = renderDiagram outfile kifu
