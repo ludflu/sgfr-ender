@@ -24,7 +24,7 @@ data GoStone = Black | White | Empty deriving (Eq, Show)
 data GoPoint =  GoPoint { x::Integer, y::Integer }deriving (Eq, Show, Ord)
 data BoardState = BoardState {
   board :: M.Map GoPoint GoStone,
-  moveNumberMap :: M.Map GoPoint Int,
+  moveNumberMap :: M.Map GoPoint Integer,
   boardSize :: Integer,
   moveNumber :: Int
 } deriving (Show)
@@ -36,10 +36,10 @@ opposite Empty = Empty
 
 emptyBoard :: Integer -> BoardState
 emptyBoard boardSize = let points = [GoPoint x y | x <- [0..boardSize], y <- [0..boardSize]]
-                in BoardState { 
-                    board = M.fromList $ zip points (repeat Empty), 
+                in BoardState {
+                    board = M.fromList $ zip points (repeat Empty),
                     moveNumberMap = M.empty,
-                    moveNumber = 0,
+                    moveNumber = 1,
                     boardSize = boardSize }
 
 isOnBoard :: Integer -> GoPoint ->  Bool
@@ -111,38 +111,43 @@ findAdjacentEnemyDragons  point = do enemyNeighbors <- neighborsEnemies point
 
 
 capture' :: [GoPoint] -> State BoardState ()
-capture' = mapM_ (placeStone Empty)
+capture' = mapM_ (\x -> placeStone Empty x Nothing)
 
 capture :: GoPoint -> State BoardState ()
 capture point = do dragon <- findDragon point
                    capture' dragon
 
-placeStone :: GoStone -> GoPoint ->  State BoardState ()
-placeStone stone point = do boardState <- get
-                            put boardState{
-                                board = M.insert point stone (board boardState),
-                                moveNumberMap = M.insert point (moveNumber boardState) (moveNumberMap boardState),
-                                moveNumber = moveNumber boardState + 1}
+placeStone :: GoStone -> GoPoint -> Maybe Integer -> State BoardState ()
+placeStone stone point moveNumber = do boardState <- get
+                                       put boardState{
+                                            board = M.insert point stone (board boardState),
+                                            --if moveNumber is Nothing, then the stone is not a move, so don't update moveNumberMap otherwise update it
+                                            moveNumberMap = case moveNumber of
+                                                Nothing -> moveNumberMap boardState
+                                                Just n -> M.insert point n (moveNumberMap boardState)
+
+                                            }
 
 
 isCapturable :: GoPoint -> State BoardState Bool
 isCapturable p = do libertyCount <- libertyCount p
                     return $ libertyCount == 0
 
-playStone :: GoStone -> GoPoint -> State BoardState ()
-playStone stone point = do placeStone stone point
-                           enemies <- neighborsEnemies point
-                           captureAble <- filterM isCapturable enemies
-                           mapM_ capture captureAble
+playStone :: GoStone -> GoPoint -> Maybe Integer -> State BoardState ()
+playStone stone point moveNumber = do placeStone stone point moveNumber
+                                      enemies <- neighborsEnemies point
+                                      captureAble <- filterM isCapturable enemies
+                                      mapM_ capture captureAble
 
-playBlack :: Integer -> Integer -> State BoardState ()
+playBlack :: Integer -> Integer -> Maybe Integer -> State BoardState ()
 playBlack x y = playStone Black (GoPoint x y)
-playWhite :: Integer -> Integer -> State BoardState ()
+
+playWhite :: Integer -> Integer -> Maybe Integer -> State BoardState ()
 playWhite x y = playStone White (GoPoint x y)
 
 playMoves :: [(GoStone, Integer, Integer,  Integer)] -> State BoardState ()
-playMoves = mapM_ (\(s, x, y, moveNumber) -> playStone s (GoPoint x y))
+playMoves = mapM_ (\(s, x, y, moveNumber) -> playStone s (GoPoint x y) (Just moveNumber))
 
 getAllStones :: BoardState -> [(GoPoint, GoStone)]
 getAllStones boardState = let boardMap = board boardState
-                           in  filter (\ (p,s) -> s /= Empty )(M.toList boardMap)
+                           in  filter (\ (p,s) -> s /= Empty ) (M.toList boardMap)

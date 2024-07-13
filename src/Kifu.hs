@@ -25,9 +25,9 @@ isBlack (color, _, _, _) = color == Black
 isWhite :: (GoStone, Integer,Integer, Integer) -> Bool
 isWhite (color, _, _, _) = color == White
 
-mapColor :: (Ord a, Floating a) => GoStone -> Colour a
-mapColor Black = black
-mapColor White = white
+flipColor :: (Ord a, Floating a) => GoStone -> Colour a
+flipColor Black = white
+flipColor White = black
 
 tfm :: Integer -> Integer -> (Int,Int)
 tfm x y = ((fromIntegral x*2)+1,(fromIntegral y*2)+1)
@@ -38,7 +38,7 @@ transformMovetoBoard (_, x',y', n) = tfm x' y'
 woodenBoard ::  QDiagram B V2 Double Any
 woodenBoard  = square 1.1  # lw none # fc yellow # opacity 0.5
 
--- myGridOpts :: GridOpts
+myGridOpts :: (Floating n, Ord n) => GridOpts n
 myGridOpts = GridOpts
         { _gridLineWidth = thin
         , _gridXColour   = black
@@ -57,18 +57,21 @@ placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagr
 placeWhiteStones = let dgm = circle (cSize / 2) # fc white # opacity 1.0 # lw 0.2
                       in placeDiagramOnGrid dgm
 
-txtPt :: String ->  QDiagram B V2 Double Any
-txtPt t = text t # fontSize (local 0.023)
+moveNumberLabel :: String ->  QDiagram B V2 Double Any
+moveNumberLabel t   -- as the number of the move increases, the label should get smaller
+        | length t == 1 = text t # fontSize (local 0.026)
+        | length t == 2 = text t # fontSize (local 0.020)
+        | length t > 2  = text t # fontSize (local 0.016)
+
 
 ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
-ann x y color number = annotate number txtPt color x y
+ann x y color number = annotate number moveNumberLabel color x y
 
 twoUp :: Diagram B -> Diagram B -> Diagram B
-twoUp a b = a === b
+twoUp a b = a ||| b
 
 fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
-fourUp a b c d = twoUp a b ||| twoUp c d
-
+fourUp a b c d = twoUp a b === twoUp c d
 
 kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
@@ -83,5 +86,5 @@ kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
                             # placeWhiteStones whitePoints
                             # placeBlackStones blackPoints                          
         boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
-                                                         in acc # ann x'  y' (mapColor color) (show n) ) bd last5Locations
+                                                        in acc # ann x' y' (flipColor color) (show n) ) bd last5Locations
 
