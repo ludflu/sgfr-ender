@@ -78,6 +78,9 @@ buildAndRenderDiagram :: Integer -> FilePath ->  [(GoStone, Integer, Integer, In
 buildAndRenderDiagram boardSize outfile moves = let kifu = buildDiagram boardSize moves
                                                  in renderDiagram outfile kifu
 
+makeFileName :: String -> Integer -> String
+makeFileName prefix pageNumber = prefix ++ "-" ++ show pageNumber ++ ".pdf"
+
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
   sgf <- readSgf (input renderOpts)
@@ -88,11 +91,7 @@ run renderOpts  = do
       numberedMoveList = zip [1..] movestack
       allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
-  --  print moves
-   in do print $ head numberedMoveList
-         print "-------------"
-         print movestack
-         mapM_ (\(i, kifu) -> renderDiagrams (output renderOpts ++ "-" ++ show i ++ ".pdf") kifu) chunkedKifus
+   in mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
 
 main :: IO ()
 main = run =<< execParser opts

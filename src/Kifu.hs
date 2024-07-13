@@ -38,7 +38,7 @@ transformMovetoBoard (_, x',y', n) = tfm x' y'
 woodenBoard ::  QDiagram B V2 Double Any
 woodenBoard  = square 1.1  # lw none # fc yellow # opacity 0.5
 
--- myGridOpts :: GridOpts
+myGridOpts :: (Floating n, Ord n) => GridOpts n
 myGridOpts = GridOpts
         { _gridLineWidth = thin
         , _gridXColour   = black
@@ -57,11 +57,15 @@ placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagr
 placeWhiteStones = let dgm = circle (cSize / 2) # fc white # opacity 1.0 # lw 0.2
                       in placeDiagramOnGrid dgm
 
-txtPt :: String ->  QDiagram B V2 Double Any
-txtPt t = text t # fontSize (local 0.023)
+moveNumberLabel :: String ->  QDiagram B V2 Double Any
+moveNumberLabel t   -- as the number of the move increases, the label should get smaller
+        | length t == 1 = text t # fontSize (local 0.026)
+        | length t == 2 = text t # fontSize (local 0.020)
+        | length t > 2  = text t # fontSize (local 0.016)
+
 
 ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
-ann x y color number = annotate number txtPt color x y
+ann x y color number = annotate number moveNumberLabel color x y
 
 twoUp :: Diagram B -> Diagram B -> Diagram B
 twoUp a b = a ||| b
