@@ -25,7 +25,6 @@ isBlack (color, _, _, _) = color == Black
 isWhite :: (GoStone, Integer,Integer, Integer) -> Bool
 isWhite (color, _, _, _) = color == White
 
-
 mapColor :: (Ord a, Floating a) => GoStone -> Colour a
 mapColor Black = black
 mapColor White = white

@@ -9,7 +9,7 @@ import qualified Data.ByteString.UTF8        as BSU
 import           Data.List                   hiding ((!!))
 import           Data.SGF
 import           Data.Tree
-import           Kifu                        
+import           Kifu
 import           Prelude                     hiding (getContents, (!!))
 import Data.Maybe ( mapMaybe, fromMaybe )
 import System.IO (getContents)
@@ -17,7 +17,7 @@ import System.IO (getContents)
 
 import Data.Set (Set)
 import qualified Data.Set as Set
--- import qualified Data.Foldable as bmoves
+import qualified Data.SGF as SGF
 
 (!!) = genericIndex
 
@@ -25,22 +25,38 @@ grabTree :: [Word8] -> TreeGo
 grabTree s = case runParser collection () "stdin" s of
   Right ([Game {tree = TreeGo t}], _) -> t
 
+pointToPlay :: Point -> MoveGo
+pointToPlay = Play
 
-
-grabSetup :: TreeGo -> [MoveGo]
-grabSetup
-  n = [Set.toList bmoves  | Left Setup {addBlack = bmoves, addWhite=wmoves, remove = removePoints} <- mainLine]
-    where
+grabWhoseTurn :: TreeGo  -> [Maybe Color]
+grabWhoseTurn  n = [whoseTurn| Left Setup {addBlack = bmoves, addWhite=wmoves, remove = removePoints, toPlay=whoseTurn} <- mainLine]    where
       mainLine = map action . head . transpose . levels $ n
 
-grabMoves :: TreeGo -> [MoveGo]
+grabBlackSetup :: TreeGo -> [MoveGo]
+grabBlackSetup
+  n = concat [map pointToPlay (Set.toList bmoves) | Left Setup {addBlack = bmoves, addWhite=wmoves, remove = removePoints, toPlay=whoseTurn} <- mainLine]    where
+      mainLine = map action . head . transpose . levels $ n
+
+grabWhiteSetup :: TreeGo -> [MoveGo]
+grabWhiteSetup
+  n = concat [map pointToPlay (Set.toList wmoves) | Left Setup {addBlack = bmoves, addWhite=wmoves, remove = removePoints, toPlay=whoseTurn} <- mainLine]    where
+      mainLine = map action . head . transpose . levels $ n
+
+
+grabMoves :: TreeGo -> [(Color,MoveGo)]
 grabMoves
-  n = [move | Right Move {move = Just (color, move)} <- mainLine]
+  n = [(color,move) | Right Move {move = Just (color, move)} <- mainLine]
     where
       mainLine = map action . head . transpose . levels $ n
 
-parse :: ByteString -> [MoveGo]
+parse :: ByteString -> [(Color,MoveGo)]
 parse = grabMoves . grabTree . unpack
+
+parseBlackSetupMoves :: ByteString -> [MoveGo]
+parseBlackSetupMoves = grabBlackSetup. grabTree. unpack
+
+parseWhiteSetupMoves :: ByteString -> [MoveGo]
+parseWhiteSetupMoves = grabWhiteSetup . grabTree . unpack
 
 coordinates :: [Char]
 coordinates = delete 'I' ['A' .. 'Z']
@@ -76,14 +92,14 @@ addColors moves = let moveCount = length moves
                       colors = take moveCount $ concat $ replicate moveCount [Black, White]
                    in zip colors moves
 
-renderReady :: [MoveGo] -> [(Color, (Integer,Integer))]
-renderReady moves = let moves' = mapMaybe getCoords moves
-                      in addColors moves'
 
-readSgf ::  FilePath -> IO [MoveGo]
+readSgf ::  FilePath -> IO [(Color,MoveGo)]
 readSgf path = do
   rawSgfData <- readFile path
   let sgfData = BSU.fromString rawSgfData
-  return $ parse sgfData
+  let gameMoves = parse sgfData
+  let blackSetup = map ((,) SGF.Black) (parseBlackSetupMoves sgfData)
+  let whiteSetup = map ((,) SGF.White) (parseWhiteSetupMoves sgfData)
+  return $ blackSetup ++ whiteSetup ++ gameMoves
 
 

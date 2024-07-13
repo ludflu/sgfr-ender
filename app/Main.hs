@@ -8,7 +8,7 @@ import Kifu                        (kifu, twoUp, fourUp)
 import RenderOpts
 import Diagrams.Backend.Rasterific (B, renderPdf)
 import Diagrams.TwoD (dims2D)
-import SgfReader (readSgf, showMoves, renderReady)
+import SgfReader (readSgf, showMoves)
 import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoint (x, y), BoardState (moveNumberMap) )
 import qualified Data.Map as M
 import qualified Data.SGF as SGF
@@ -79,7 +79,7 @@ run renderOpts  = do
   sgf <- readSgf (input renderOpts)
   let boardSize = 18
       pdfDims = 200
-      process = renderReady >>> convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
+      process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
       numberedMoveList = zip [1..] movestack
       allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList
