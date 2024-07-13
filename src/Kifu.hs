@@ -25,7 +25,6 @@ isBlack (color, _, _, _) = color == Black
 isWhite :: (GoStone, Integer,Integer, Integer) -> Bool
 isWhite (color, _, _, _) = color == White
 
-
 mapColor :: (Ord a, Floating a) => GoStone -> Colour a
 mapColor Black = black
 mapColor White = white
@@ -58,13 +57,6 @@ placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagr
 placeWhiteStones = let dgm = circle (cSize / 2) # fc white # opacity 1.0 # lw 0.2
                       in placeDiagramOnGrid dgm
 
-
-placeDummy :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeDummy = placeDiagramOnGrid $ circle (cSize / 2) # fc white # opacity 0.0 # lw 0.2
-
-dummyPoint :: [(Int, Int)]
-dummyPoint = [(0,0)]
-
 txtPt :: String ->  QDiagram B V2 Double Any
 txtPt t = text t # fontSize (local 0.023)
 
@@ -85,13 +77,11 @@ kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
         whiteMoves = filter isWhite moves
         blackPoints = map transformMovetoBoard blackMoves
         whitePoints = map transformMovetoBoard whiteMoves
-        last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_, _, x) -> x)) moves
+        last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
         last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
-        boardDiagram = gridWithHalves' myGridOpts  (fromIntegral size) (fromIntegral size)
-                            # placeDummy dummyPoint
+        bd = gridWithHalves' myGridOpts  (fromIntegral size) (fromIntegral size)
                             # placeWhiteStones whitePoints
-                            # placeBlackStones blackPoints
-                          
-        -- boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
-        --                                                  in acc # ann x'  y' (mapColor color) (show n) ) bd last5Locations
+                            # placeBlackStones blackPoints                          
+        boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
+                                                         in acc # ann x'  y' (mapColor color) (show n) ) bd last5Locations
 
