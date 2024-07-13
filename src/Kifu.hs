@@ -25,9 +25,9 @@ isBlack (color, _, _, _) = color == Black
 isWhite :: (GoStone, Integer,Integer, Integer) -> Bool
 isWhite (color, _, _, _) = color == White
 
-mapColor :: (Ord a, Floating a) => GoStone -> Colour a
-mapColor Black = black
-mapColor White = white
+flipColor :: (Ord a, Floating a) => GoStone -> Colour a
+flipColor Black = white
+flipColor White = black
 
 tfm :: Integer -> Integer -> (Int,Int)
 tfm x y = ((fromIntegral x*2)+1,(fromIntegral y*2)+1)
@@ -69,7 +69,6 @@ twoUp a b = a === b
 fourUp :: Diagram B -> Diagram B -> Diagram B -> Diagram B -> Diagram B
 fourUp a b c d = twoUp a b ||| twoUp c d
 
-
 kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
 kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
     where
@@ -83,5 +82,5 @@ kifu moves size = centerXY boardDiagram <> centerXY woodenBoard
                             # placeWhiteStones whitePoints
                             # placeBlackStones blackPoints                          
         boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
-                                                         in acc # ann x'  y' (mapColor color) (show n) ) bd last5Locations
+                                                        in acc # ann x' y' (flipColor color) (show n) ) bd last5Locations
 
