@@ -17,7 +17,6 @@ import Data.List (sortBy, sortOn)
 import Data.Ord (comparing, Down (Down))
 import Goban (GoStone(Black, White))
 import Diagrams (with, sep, vcat', alignL, pad)
-import qualified Data.Map as M
 
 cSize :: Double
 cSize = 0.045
@@ -81,12 +80,6 @@ charToString c = [c]
 
 boardLetters = map charToString $ filter (/= 'I') ['A'..'T']
 
-makeBoardPoint :: Integer -> Integer -> Integer -> String
-makeBoardPoint boardSize x y = (boardLetters !! fromInteger x) ++ show (fromInteger boardSize - y)
-
-moveNameLookup :: Integer -> M.Map (Integer, Integer) String
-moveNameLookup boardSize = let pointTuples = [ ((x,y), makeBoardPoint boardSize x y ) | x <- [0..boardSize], y <- [0..boardSize]]
-                            in M.fromList pointTuples
 
 horzLabelLocations :: Integer -> [(Integer, Integer, String)]
 horzLabelLocations boardSize = let horz = [0..boardSize-1]                                   

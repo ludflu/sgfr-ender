@@ -40,7 +40,10 @@ import Network.HTTP.Conduit
   )
 import Network.HTTP.Simple (getResponseBody, httpJSON, httpLBS, setRequestBodyJSON, setRequestHeaders, setRequestMethod, setRequestPort, setRequestResponseTimeout)
 import Network.HTTP.Types
-import Goban (BoardState(board))
+import Goban (BoardState(board), GoStone)
+import Kifu (boardLetters)
+import qualified Data.Map as M
+
 
 data KataGoRequest = KataGoRequest
   { 
@@ -74,10 +77,23 @@ parseScore :: BLS.ByteString -> Either String Double
 parseScore rsp = let srsp = parseKataGoResponse rsp
                   in fmap (score . diagnostics) srsp
 
-getScore :: String -> Int -> [String] -> IO Double
+makeBoardPoint :: Integer -> Integer -> Integer -> String
+makeBoardPoint boardSize x y = (boardLetters !! fromInteger x) ++ show (fromInteger boardSize - y)
+
+moveNameLookup :: Integer -> M.Map (Integer, Integer) String
+moveNameLookup boardSize = let pointTuples = [ ((x,y), makeBoardPoint boardSize x y ) | x <- [0..boardSize], y <- [0..boardSize]]
+                            in M.fromList pointTuples
+
+
+translateMoves :: Integer -> [(GoStone, Integer, Integer, Integer)] -> [String]
+translateMoves boardSize = let bp = makeBoardPoint boardSize
+                           in map (\(color, x,y, movenumber) -> bp x y)
+
+getScore :: String -> Int -> [(GoStone, Integer, Integer, Integer)] -> IO Double
 getScore host apiPort moves =
-  let payload = KataGoRequest {board_size=19, moves=moves}
-      url = "http://" ++ host ++ "/score/katago_gtp_bot"
+  let boardMoves = translateMoves 19 moves 
+      payload = KataGoRequest {board_size=19, moves=boardMoves}
+      url = "http://" ++ host ++ "/score/katago_gtp_bot"      
    in do
         request' <- parseRequest url
         let request =
