@@ -23,6 +23,10 @@ Available options:
 ```
 
 ## Building
+
+Note - this tool relies on the [Data.SGF](https://hackage.haskell.org/package/sgf) package for parsing SGF files.
+Unfortunately, this package needs to be updated, so I [forked it](https://github.com/ludflu/sgf) and applied a fix. 
+
 `
 cabal build
 cabal install
