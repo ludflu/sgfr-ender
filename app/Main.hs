@@ -103,8 +103,8 @@ run renderOpts  = do
       numberedMoveList = zip [1..] movestack
       allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
-   in do score <- getScore "localhost" 2178 ["R4", "D16"]
-         print score 
+   in do --score <- getScore "localhost" 2178 ["R4", "D16"]
+         print movestack 
          mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
 
 main :: IO ()

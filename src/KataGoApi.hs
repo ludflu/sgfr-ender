@@ -6,13 +6,10 @@
 
 module KataGoApi (getScore) where
 
--- import Conduit (ConduitM, ConduitT, MonadResource, awaitForever, concatC, concatMapAccumC, concatMapC, concatMapCE, filterC, leftover, mapAccumWhileC, mapC, mapCE, mapM_C, runConduit, runConduitRes, sinkLazy, sourceLazy, yield, (.|))
 import Control.Concurrent (forkIO)
--- import Control.Concurrent.STM (STM, TQueue, atomically, readTVar, writeTQueue, writeTVar)
 import Control.Exception (throwIO)
 import Control.Monad (liftM, unless, when)
 import Control.Monad.IO.Class (MonadIO (..))
--- import Control.Monad.Trans.Resource (ResourceT, liftResourceT, runResourceT)
 import Data.Aeson (FromJSON, ToJSON, Value (Number, Object, String), decode, eitherDecode, encode, fromJSON, parseJSON)
 import Data.Aeson.Encoding (string)
 import qualified Data.Aeson.KeyMap as AKM
@@ -21,8 +18,6 @@ import Data.ByteString.Builder (byteString)
 import Data.ByteString.Char8 (unpack)
 import qualified Data.ByteString.Lazy as BLS
 import Data.Char (isPunctuation)
--- import Data.Conduit.Binary (sinkFile, sinkHandle, sinkLbs, sourceLbs)
--- import Data.Conduit.Combinators (concatMapE, concatMapM, mapAccumWhile, mapE, splitOnUnboundedE)
 import Data.IntMap.Merge.Lazy (mapWhenMatched)
 import Data.List (isInfixOf)
 import Data.Maybe (fromJust, isJust, mapMaybe)
@@ -81,7 +76,7 @@ parseScore rsp = let srsp = parseKataGoResponse rsp
 
 getScore :: String -> Int -> [String] -> IO Double
 getScore host apiPort moves =
-  let payload = KataGoRequest {board_size=19, moves= ["A10"]}
+  let payload = KataGoRequest {board_size=19, moves=moves}
       url = "http://" ++ host ++ "/score/katago_gtp_bot"
    in do
         request' <- parseRequest url
