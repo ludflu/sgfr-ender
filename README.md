@@ -28,7 +28,7 @@ Available options:
   -h,--help                Show this help text
 ```
 
-## Combining PDF document
+## Combining PDF documents
 
 Each diagram page will be output as a separate PDF document - but you can use one of several 
 common tools to combine them into a single document.
