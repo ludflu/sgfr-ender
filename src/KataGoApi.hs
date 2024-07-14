@@ -48,22 +48,23 @@ import Network.HTTP.Types
 import Goban (BoardState(board))
 
 data KataGoRequest = KataGoRequest
-  { board_size :: Integer,
+  { 
+    board_size :: Integer,
     moves::[String]
   }
   deriving (Generic, Show)
 
 data KataGoDiagnostics = KataGoDiagnostics {
-  best_ten :: [Map String String],
-  bot_move :: String,
+  best_ten :: Maybe [Map String String],
+  bot_move :: Maybe String,
   score::Double,
   winprob::Double
 }  deriving (Generic, Show)
 
 
 data KataGoResponse = KataGoResponse
-  { diagnostics :: String,
-    probs :: [Double],
+  { diagnostics :: KataGoDiagnostics,
+    probs :: [String],
     request_id :: String
   }  deriving (Generic, Show)
 
@@ -71,9 +72,12 @@ instance ToJSON KataGoRequest
 instance FromJSON KataGoDiagnostics
 instance FromJSON KataGoResponse
 
+parseKataGoResponse :: BLS.ByteString -> Either String KataGoResponse
+parseKataGoResponse = eitherDecode
+
 parseScore :: BLS.ByteString -> Either String Double
-parseScore rsp = let srsp = eitherDecode rsp
-                  in fmap score srsp
+parseScore rsp = let srsp = parseKataGoResponse rsp
+                  in fmap (score . diagnostics) srsp
 
 getScore :: String -> Int -> [String] -> IO Double
 getScore host apiPort moves =
