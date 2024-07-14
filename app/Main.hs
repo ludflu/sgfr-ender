@@ -18,7 +18,7 @@ import Control.Monad.State ( execState )
 import Diagrams (Renderable)
 import Diagrams.Prelude hiding (output)
 import Diagrams.Backend.Rasterific.CmdLine
-import KataGoApi
+import KataGoApi (scoreAllMoves)
 import Data.Maybe (catMaybes, fromMaybe)
 import Options.Applicative
   ( Alternative (empty),
@@ -103,7 +103,7 @@ run renderOpts  = do
       numberedMoveList = zip [1..] movestack
       allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
-   in do score <- getScore "localhost" 2178 $ head movestack
+   in do score <- scoreAllMoves "localhost" 2178 $ last movestack
          print score 
          mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
 

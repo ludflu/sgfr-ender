@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module KataGoApi (getScore) where
+module KataGoApi (getScore, scoreAllMoves) where
 
 import Control.Concurrent (forkIO)
 import Control.Exception (throwIO)
@@ -89,6 +89,8 @@ translateMoves :: Integer -> [(GoStone, Integer, Integer, Integer)] -> [String]
 translateMoves boardSize = let bp = makeBoardPoint boardSize
                            in map (\(color, x,y, movenumber) -> bp x y)
 
+
+
 getScore :: String -> Int -> [(GoStone, Integer, Integer, Integer)] -> IO Double
 getScore host apiPort moves =
   let boardMoves = translateMoves 19 moves 
@@ -106,6 +108,15 @@ getScore host apiPort moves =
 
         rsp <- httpLBS request
         let d = parseScore $ getResponseBody rsp
-         in case d of
-              Left err -> liftIO $ print ("Error parsing result from katago API: " ++ err) >> return 0.0
-              Right dur -> return dur
+        print d
+        case d of
+          Left err -> liftIO $ print ("Error parsing result from katago API: " ++ err) >> return 0.0
+          Right dur -> return dur
+
+
+moveList :: [i] -> [[i]]
+moveList is = let takelist = [1..length is]
+               in map (\n -> take n is) takelist
+
+scoreAllMoves :: String -> Int -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
+scoreAllMoves host apiPort moves = mapM (\ms -> getScore host apiPort ms) (moveList moves)
