@@ -40,6 +40,8 @@ brew install pdftk-java
 pdftk test/outtest* cat output all.pdf
 ```
 
+If you prefer a GUI tool, you can use the [native preview app to combine documents also](https://support.apple.com/guide/preview/combine-pdfs-prvw43696/mac).
+
 ## Download
 
 You can find the latest binary on the [releases page](https://github.com/ludflu/sgfr-ender/releases). The initial release only supports Mac OSX / ARM64.
