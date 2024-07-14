@@ -40,6 +40,10 @@ brew install pdftk-java
 pdftk test/outtest* cat output all.pdf
 ```
 
+## Download
+
+You can find the latest binary on the [releases page](https://github.com/ludflu/sgfr-ender/releases). The initial release only supports Mac OSX / ARM64.
+
 ## Building
 
 Note - this tool relies on the venerable [Data.SGF](https://hackage.haskell.org/package/sgf) package for parsing SGF files.
