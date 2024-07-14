@@ -15,6 +15,7 @@ import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoi
 import qualified Data.Map as M
 import qualified Data.SGF as SGF
 import Control.Monad.State ( execState )
+import Control.Monad (when)
 import Diagrams (Renderable)
 import Diagrams.Prelude hiding (output)
 import Diagrams.Backend.Rasterific.CmdLine
@@ -95,6 +96,10 @@ makeFileName :: String -> Integer -> String
 makeFileName prefix pageNumber = let pnum = printf "%05d" pageNumber
                                   in prefix ++ "-" ++ pnum ++ ".pdf"
 
+getScore :: Integer -> [(GoStone, Integer, Integer, Integer)] -> IO ()
+getScore boardSize moves = do score <- scoreAllMoves "localhost" 2178 boardSize moves
+                              print score
+
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
   (boardSize,sgf) <- readSgf (input renderOpts)
@@ -103,8 +108,7 @@ run renderOpts  = do
       numberedMoveList = zip [1..] movestack
       allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
-   in do score <- scoreAllMoves "localhost" 2178 $ last movestack
-         print score 
+   in do when (scoreEstimate renderOpts)  $ getScore boardSize $ last movestack
          mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
 
 main :: IO ()

@@ -91,10 +91,10 @@ translateMoves boardSize = let bp = makeBoardPoint boardSize
 
 
 
-getScore :: String -> Int -> [(GoStone, Integer, Integer, Integer)] -> IO Double
-getScore host apiPort moves =
-  let boardMoves = translateMoves 19 moves 
-      payload = KataGoRequest {board_size=19, moves=boardMoves}
+getScore :: String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO Double
+getScore host apiPort boardSize moves =
+  let boardMoves = translateMoves boardSize moves 
+      payload = KataGoRequest {board_size=boardSize, moves=boardMoves}
       url = "http://" ++ host ++ "/score/katago_gtp_bot"      
    in do
         request' <- parseRequest url
@@ -118,5 +118,5 @@ moveList :: [i] -> [[i]]
 moveList is = let takelist = [1..length is]
                in map (\n -> take n is) takelist
 
-scoreAllMoves :: String -> Int -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
-scoreAllMoves host apiPort moves = mapM (\ms -> getScore host apiPort ms) (moveList moves)
+scoreAllMoves :: String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
+scoreAllMoves host apiPort boardSize moves = mapM (\ms -> getScore host apiPort boardSize ms) (moveList moves)
