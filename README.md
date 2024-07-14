@@ -6,7 +6,7 @@
 
 sgf-render creates pdf documents containing a series of go board diagrams, with several moves in each diagram,
 suitable for game review. It supports 19x19, 13x13 and 9x9. You can configure how many moves are displayed in each new diagram,
-and how many diagrams are displayed per page. 
+and how many diagrams are displayed per page. Yes, I know the repo name is spelled wrong.
 
 ## Running
 ```
