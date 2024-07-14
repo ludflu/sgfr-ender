@@ -31,6 +31,10 @@ library kifu
                        bytestring,
                        utf8-string,
                        mtl,
+                       text,
+                       http-conduit,
+                       http-types,
+                       aeson,
 
 
 
