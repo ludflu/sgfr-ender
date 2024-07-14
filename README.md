@@ -28,9 +28,15 @@ Note - this tool relies on the [Data.SGF](https://hackage.haskell.org/package/sg
 Unfortunately, this package needs to be updated, so I [forked it](https://github.com/ludflu/sgf) and applied a fix. 
 If you're trying to build this package, you'll first need to manually install Data.SGF from my fork, at least until a PR is merged.
 
-`
+```
+git clone git@github.com:ludflu/sgf.git
+cd sgf
+cabal install --lib
+cd ..
+git clone git@github.com:ludflu/sgfr-ender.git
+cd sgfr-ender
 cabal build
 cabal install
-`
+```
 
 
