@@ -62,23 +62,22 @@ data KataGoDiagnostics = KataGoDiagnostics {
 
 
 data KataGoResponse = KataGoResponse
-  { diagnostics :: KataGoDiagnostics,
+  { diagnostics :: String,
     probs :: [Double],
     request_id :: String
   }  deriving (Generic, Show)
 
 instance ToJSON KataGoRequest
-
+instance FromJSON KataGoDiagnostics
 instance FromJSON KataGoResponse
 
 parseScore :: BLS.ByteString -> Either String Double
 parseScore rsp = let srsp = eitherDecode rsp
-                  in fmap duration srsp
+                  in fmap score srsp
 
-sayText :: String -> Int -> String -> IO Double
-sayText host apiPort msg =
-  let substitutedMsg = convertAllNumbers msg
-      payload = KataGoRequest {board_size=19, moves= ["A10"]}
+getScore :: String -> Int -> [String] -> IO Double
+getScore host apiPort moves =
+  let payload = KataGoRequest {board_size=19, moves= ["A10"]}
       url = "http://" ++ host ++ "/score/katago_gtp_bot"
    in do
         request' <- parseRequest url
@@ -91,7 +90,7 @@ sayText host apiPort msg =
                 $ request'
 
         rsp <- httpLBS request
-        let d = parseDuration $ getResponseBody rsp
+        let d = parseScore $ getResponseBody rsp
          in case d of
               Left err -> liftIO $ print ("Error parsing result from katago API: " ++ err) >> return 0.0
               Right dur -> return dur
