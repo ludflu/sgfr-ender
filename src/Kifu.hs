@@ -19,7 +19,7 @@ import Goban (GoStone(Black, White))
 import Diagrams (with, sep, vcat', alignL, pad)
 
 cSize :: Double
-cSize = 0.045
+cSize = 0.0225
 
 isBlack :: (GoStone, Integer,Integer, Integer) -> Bool
 isBlack (color, _, _, _) = color == Black
@@ -50,14 +50,14 @@ myGridOpts = GridOpts
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-placeBlackStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeBlackStones = let dgm = circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1
-                      in placeDiagramOnGrid dgm
+placeBlackStones :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeBlackStones cSize = let dgm = circle cSize # fc black  # opacity 1.0 # lw 0.1
+                          in placeDiagramOnGrid dgm
 
 
-placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeWhiteStones = let dgm = circle (cSize / 2) # fc white # opacity 1.0 # lw 0.2
-                      in placeDiagramOnGrid dgm
+placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeWhiteStones cSize = let dgm = circle cSize  # fc white # opacity 1.0 # lw 0.2
+                          in placeDiagramOnGrid dgm
 
 starPoints :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
 starPoints = let dgm = circle (cSize / 5) # fc black # opacity 1.0 # lw 0.2
@@ -120,8 +120,8 @@ kifu moves boardSize = centerXY labeledXBoard <> centerXY woodenBoard
         last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
         bd = gridWithHalves' myGridOpts  (fromIntegral boardSize-1) (fromIntegral boardSize-1)
                             # starPoints starPointLocations
-                            # placeWhiteStones whitePoints
-                            # placeBlackStones blackPoints
+                            # placeWhiteStones cSize whitePoints
+                            # placeBlackStones cSize blackPoints
 
         boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Locations
