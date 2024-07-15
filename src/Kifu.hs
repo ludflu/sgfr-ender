@@ -19,7 +19,7 @@ import Goban (GoStone(Black, White))
 import Diagrams (with, sep, vcat', alignL, pad)
 
 cSize :: Double
-cSize = 0.0225
+cSize = 0.45
 
 isBlack :: (GoStone, Integer,Integer, Integer) -> Bool
 isBlack (color, _, _, _) = color == Black
@@ -59,8 +59,8 @@ placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm]
 placeWhiteStones cSize = let dgm = circle cSize  # fc white # opacity 1.0 # lw 0.2
                           in placeDiagramOnGrid dgm
 
-starPoints :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-starPoints = let dgm = circle (cSize / 5) # fc black # opacity 1.0 # lw 0.2
+starPoints :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+starPoints cSize= let dgm = circle cSize # fc black # opacity 1.0 # lw 0.2
                       in placeDiagramOnGrid dgm
 
 
@@ -119,9 +119,9 @@ kifu moves boardSize = centerXY labeledXBoard <> centerXY woodenBoard
         last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
         last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
         bd = gridWithHalves' myGridOpts  (fromIntegral boardSize-1) (fromIntegral boardSize-1)
-                            # starPoints starPointLocations
-                            # placeWhiteStones cSize whitePoints
-                            # placeBlackStones cSize blackPoints
+                            # starPoints (cSize / (3.0 * fromInteger boardSize)) starPointLocations
+                            # placeWhiteStones (cSize / fromInteger boardSize) whitePoints
+                            # placeBlackStones (cSize / fromInteger boardSize) blackPoints
 
         boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Locations
