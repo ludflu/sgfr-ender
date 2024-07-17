@@ -109,8 +109,8 @@ fourUp a b c d = let top = hcat' (with & sep .~ 0.15) [a,b]
 starPointLocations :: [(Int, Int)]
 starPointLocations = map (uncurry tfm) ([(3,3),(15,15),(15,3),(3,15)] ++ [ (3,9),(9,3),(9,9),(3,3)]  ++ [(15,9), (9,15),(9,9),(15,15)])
 
-kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
-kifu moves boardSize = centerXY labeledXBoard <> centerXY woodenBoard
+kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> [Double] -> QDiagram B V2 Double Any
+kifu moves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
     where
         blackMoves = filter isBlack moves
         whiteMoves = filter isWhite moves

@@ -15,7 +15,6 @@ import Goban ( GoStone(White, Black), emptyBoard, playMoves, getAllStones, GoPoi
 import qualified Data.Map as M
 import qualified Data.SGF as SGF
 import Control.Monad.State ( execState )
-import Control.Monad (when)
 import Diagrams (Renderable)
 import Diagrams.Prelude hiding (output)
 import Diagrams.Backend.Rasterific.CmdLine
@@ -31,11 +30,10 @@ import Options.Applicative
     progDesc,
     (<**>),
   )
-import Data.List.Split (chunksOf)
-
+import Data.List.Split (chunksOf, divvy)
+import Data.List ( tails )
 import Control.Arrow hiding ((|||))
 import Text.Printf (printf)
-
 mapColor :: SGF.Color -> GoStone
 mapColor SGF.Black = Black
 mapColor SGF.White = White
@@ -81,34 +79,44 @@ renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
 renderDiagrams outfile [a,b,c] = renderDiagram outfile $ fourUp a b c mempty
 renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
-buildDiagram :: Integer  ->  [(GoStone, Integer, Integer, Integer)] -> Diagram B
-buildDiagram boardSize moves = let
+buildDiagram :: Integer  ->  [(GoStone, Integer, Integer, Integer)] -> [Double] ->Diagram B
+buildDiagram boardSize moves scores = let
       initialGoban = emptyBoard boardSize
       finalBoard = execState (playMoves moves) initialGoban
       gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
-   in kifu gostones boardSize
+   in kifu gostones boardSize scores
 
-buildAndRenderDiagram :: Integer -> FilePath ->  [(GoStone, Integer, Integer, Integer)] -> IO ()
-buildAndRenderDiagram boardSize outfile moves = let kifu = buildDiagram boardSize moves
-                                                 in renderDiagram outfile kifu
 
 makeFileName :: String -> Integer -> String
 makeFileName prefix pageNumber = let pnum = printf "%05d" pageNumber
                                   in prefix ++ "-" ++ pnum ++ ".pdf"
 
-getScore :: Integer -> [(GoStone, Integer, Integer, Integer)] -> IO ()
-getScore boardSize moves = do score <- scoreAllMoves "localhost" 2178 boardSize moves
-                              print score
+getScore :: Bool -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
+getScore scoringRequested boardSize moves = if scoringRequested then 
+                                                scoreAllMoves "localhost" 2178 boardSize moves
+                                            else return []
+
+
+calculateMoveStrength :: [Double] -> [Double]
+calculateMoveStrength  pointEstimates = let first = head pointEstimates
+                                            moveWindow = divvy 2 1 pointEstimates
+                                            moveStrength = map (\(x:y:_) -> y-x ) moveWindow
+                                         in first : moveStrength
 
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
   (boardSize,sgf) <- readSgf (input renderOpts)
+  let scoringRequested = scoreEstimate renderOpts
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
+  scores <-  getScore scoringRequested  boardSize $ last movestack  
+
+  let 
       numberedMoveList = zip [1..] movestack
-      allKifus = map (\(i, moves) -> buildDiagram boardSize moves) numberedMoveList
+      allKifus = map (\(i, moves) -> buildDiagram boardSize moves scores) numberedMoveList
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
-   in do when (scoreEstimate renderOpts)  $ getScore boardSize $ last movestack
+ 
+   in do 
          mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
 
 main :: IO ()
