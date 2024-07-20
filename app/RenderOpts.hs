@@ -8,8 +8,9 @@ data RenderOpts = RenderOpts {
     movesPerDiagram :: Int,
     diagramsPerPage :: Int,
     input ::  FilePath,
-    output :: FilePath
-    } deriving (Show)
+    output :: FilePath,
+    scoreEstimate :: Bool
+} deriving (Show)
 
 -- Define the custom parser
 validateDiagramsPerPage :: Int -> Either String Int
@@ -43,4 +44,9 @@ parseOpts = RenderOpts <$>
         <> short 'o'
         <> metavar "OUTPUT" 
         <> help "output file pattern")
+    <*> switch
+      ( long "score-estimate"
+          <> short 's'
+          <> help "Whether to estimate the score of the game using KataGo")
+      
 

@@ -19,7 +19,7 @@ import Goban (GoStone(Black, White))
 import Diagrams (with, sep, vcat', alignL, pad)
 
 cSize :: Double
-cSize = 0.045
+cSize = 0.45
 
 isBlack :: (GoStone, Integer,Integer, Integer) -> Bool
 isBlack (color, _, _, _) = color == Black
@@ -50,17 +50,17 @@ myGridOpts = GridOpts
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-placeBlackStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeBlackStones = let dgm = circle (cSize / 2) # fc black  # opacity 1.0 # lw 0.1
-                      in placeDiagramOnGrid dgm
+placeBlackStones :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeBlackStones cSize = let dgm = circle cSize # fc black  # opacity 1.0 # lw 0.1
+                          in placeDiagramOnGrid dgm
 
 
-placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeWhiteStones = let dgm = circle (cSize / 2) # fc white # opacity 1.0 # lw 0.2
-                      in placeDiagramOnGrid dgm
+placeWhiteStones :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeWhiteStones cSize = let dgm = circle cSize  # fc white # opacity 1.0 # lw 0.2
+                          in placeDiagramOnGrid dgm
 
-starPoints :: (IsName nm, Renderable (Path V2 Double) b) => [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-starPoints = let dgm = circle (cSize / 5) # fc black # opacity 1.0 # lw 0.2
+starPoints :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+starPoints cSize= let dgm = circle cSize # fc black # opacity 1.0 # lw 0.2
                       in placeDiagramOnGrid dgm
 
 
@@ -75,11 +75,16 @@ vertLabelLocations :: Integer -> [(Integer, Integer, String)]
 vertLabelLocations boardSize = let vert = reverse [0..boardSize-1]
                       in map (\t -> (0, t, show (boardSize-t))) vert
 
+charToString :: Char -> String
+charToString c = [c]
+
+boardLetters = map charToString $ filter (/= 'I') ['A'..'T']
+
+
 horzLabelLocations :: Integer -> [(Integer, Integer, String)]
-horzLabelLocations boardSize = let horz = [0..boardSize-1]
-                                   letters = map (: []) ['A'..'T']
-                                   noI = take (fromInteger boardSize) $ filter (/= "I") letters
-                                in map (\t -> (t, boardSize-1, noI !! fromInteger t)) horz
+horzLabelLocations boardSize = let horz = [0..boardSize-1]                                   
+                                --    noI = take (fromInteger boardSize)  boardLetters
+                                in map (\t -> (t, boardSize-1, boardLetters !! fromInteger t)) horz
 
 
 ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
@@ -104,8 +109,8 @@ fourUp a b c d = let top = hcat' (with & sep .~ 0.15) [a,b]
 starPointLocations :: [(Int, Int)]
 starPointLocations = map (uncurry tfm) ([(3,3),(15,15),(15,3),(3,15)] ++ [ (3,9),(9,3),(9,9),(3,3)]  ++ [(15,9), (9,15),(9,9),(15,15)])
 
-kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> QDiagram B V2 Double Any
-kifu moves boardSize = centerXY labeledXBoard <> centerXY woodenBoard
+kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> [Double] -> QDiagram B V2 Double Any
+kifu moves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
     where
         blackMoves = filter isBlack moves
         whiteMoves = filter isWhite moves
@@ -114,9 +119,9 @@ kifu moves boardSize = centerXY labeledXBoard <> centerXY woodenBoard
         last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
         last5Locations = map (\(stone,x,y,nbr) -> (stone, (x,y,nbr))) last5
         bd = gridWithHalves' myGridOpts  (fromIntegral boardSize-1) (fromIntegral boardSize-1)
-                            # starPoints starPointLocations
-                            # placeWhiteStones whitePoints
-                            # placeBlackStones blackPoints
+                            # starPoints (cSize / (3.0 * fromInteger boardSize)) starPointLocations
+                            # placeWhiteStones (cSize / fromInteger boardSize) whitePoints
+                            # placeBlackStones (cSize / fromInteger boardSize) blackPoints
 
         boardDiagram = foldl (\acc (color, (x,y,n)) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Locations
