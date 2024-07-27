@@ -50,9 +50,12 @@ myGridOpts = GridOpts
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-placeGreenCircles :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeGreenCircles cSize = let dgm = circle cSize  # fc green  # opacity 1.0 # lw 0.1
-                          in placeDiagramOnGrid dgm
+placeGreenCircles' :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeGreenCircles' cSize locations scores = let dgm = circle cSize  # fc green  # opacity 1.0 # lw 0.1
+                                            in placeDiagramOnGrid dgm locations
+
+placeGreenCircles :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+placeGreenCircles cSize locations scores = if null scores then id else placeGreenCircles' cSize locations scores
 
 placeBlackStones ::  (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
 placeBlackStones cSize = let dgm = circle cSize # fc black # opacity 1.0 # lw 0.1
@@ -82,12 +85,9 @@ charToString c = [c]
 
 boardLetters = map charToString $ filter (/= 'I') ['A'..'T']
 
-
 horzLabelLocations :: Integer -> [(Integer, Integer, String)]
 horzLabelLocations boardSize = let horz = [0..boardSize-1]                                   
-                                --    noI = take (fromInteger boardSize)  boardLetters
                                 in map (\t -> (t, boardSize-1, boardLetters !! fromInteger t)) horz
-
 
 ann :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
 ann x y color number = annotate number moveNumberLabel color x y
@@ -99,8 +99,6 @@ annSide x y color number = let lbn n = text (n++ "            ") # fontSize (loc
 annBottom :: Int -> Int -> Colour Double -> String -> Diagram B -> Diagram B
 annBottom x y color number = let lbn n = vcat' (with & sep .~ 0.04) [ text " " # fontSize (local 0.020) , text n # fontSize (local 0.020) ]
                             in annotate number lbn color x y
-
-
 
 twoUp :: Diagram B -> Diagram B -> Diagram B
 twoUp a b = vcat' (with & sep .~ 0.15) [a,b]
@@ -132,13 +130,12 @@ kifu moves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
 
         bd = gridWithHalves' myGridOpts  (fromIntegral boardSize-1) (fromIntegral boardSize-1)
                             # starPoints (cSize / (3.0 * fromInteger boardSize)) (starPointLocations boardSize)
-                            # placeGreenCircles ((cSize / fromInteger boardSize) * 1.2) last5Locations
+                            # placeGreenCircles ((cSize / fromInteger boardSize) * 1.2) last5Locations last5Scores
                             # placeWhiteStones (cSize / fromInteger boardSize) whitePoints
                             # placeBlackStones (cSize / fromInteger boardSize) blackPoints
 
         boardDiagram = foldl (\acc (color, x,y,n) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Moves
-
 
         labeledYBoard  = foldl (\acc (x,y,n) -> let (x',y') = tfm x y
                                               in acc # annSide x' y' black n)  boardDiagram $ vertLabelLocations boardSize
@@ -146,4 +143,3 @@ kifu moves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
         labeledXBoard  = foldl (\acc (x,y,n) -> let (x',y') = tfm x y
                                               in acc # annBottom x' y' black n)  labeledYBoard $ horzLabelLocations boardSize
 
-        --TODO add an annotation for the last five moves depending on the score
