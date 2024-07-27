@@ -117,8 +117,8 @@ fourUp a b c d = let top = hcat' (with & sep .~ 0.15) [a,b]
 starPointLocations :: Integer ->[(Int, Int)]
 starPointLocations boardSize 
  | boardSize == 19 = map (uncurry tfm) [(3,3),(15,15),(15,3),(3,15), (3,9),(9,3),(9,9), (15,9), (9,15)]
- | boardSize == 13 = [ ] --TODO star points for 13
- | boardSize == 9 = [] --TODO star points for 9
+ | boardSize == 13 = map (uncurry tfm) [ (3,3), (3,9),(9,9), (9,3), (6,6)] --TODO star points for 13
+ | boardSize == 9 = map (uncurry tfm)  [(2,2), (2,6), (6,6), (6,2), (4,4)] --TODO star points for 9
 
 
 kifu :: [(GoStone, Integer, Integer, Integer)] -> Integer -> [Double] -> QDiagram B V2 Double Any
