@@ -109,7 +109,8 @@ run renderOpts  = do
   let scoringRequested = scoreEstimate renderOpts
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
-  scores <-  getScore scoringRequested  boardSize $ last movestack  
+  scores <- getScore scoringRequested  boardSize $ last movestack
+  print scores  
 
   let 
       numberedMoveList = zip [1..] movestack
