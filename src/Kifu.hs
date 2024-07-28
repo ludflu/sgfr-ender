@@ -63,24 +63,15 @@ placeGreenCircles' cSize locations scores = let goodMove = circle cSize # fc gre
 placeGreenCircles :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
 placeGreenCircles cSize locations scores = if null scores then id else placeGreenCircles' cSize locations scores
 
-placeBlackStones ::  (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeBlackStones cSize = let dgm = circle cSize # fc black # opacity 1.0 # lw 0.1
-                          in placeDiagramOnGrid dgm
-
-placeWhiteStones ::  (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeWhiteStones cSize = let dgm = circle cSize  # fc white # opacity 1.0 # lw 1.0
-                          in placeDiagramOnGrid dgm
-
-starPoints :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-starPoints cSize= let dgm = circle cSize # fc black # opacity 1.0 # lw 0.2
-                      in placeDiagramOnGrid dgm
+blackStone cSize  = circle cSize # fc black # opacity 1.0 # lw 0.1
+whiteStone cSize  = circle cSize  # fc white # opacity 1.0 # lw 1.0
+starPoint cSize = circle cSize # fc black # opacity 1.0 # lw 0.2
 
 moveNumberLabel :: String ->  QDiagram B V2 Double Any
 moveNumberLabel t   -- as the number of the move increases, the label should get smaller
         | length t == 1 = text t # fontSize (local 0.026)
         | length t == 2 = text t # fontSize (local 0.020)
         | length t > 2  = text t # fontSize (local 0.016)
-
 
 vertLabelLocations :: Integer -> [(Integer, Integer, String)]
 vertLabelLocations boardSize = let vert = reverse [0..boardSize-1]
@@ -134,11 +125,12 @@ kifu moves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
         last5Moves = map (\(stone,x,y,nbr) -> (stone, x,y,nbr)) last5
         last5Locations = map (\(stone, x,y,nbr) -> tfm x y) last5Moves
 
+        stoneSize = cSize / fromInteger boardSize
         bd = gridWithHalves' myGridOpts  (fromIntegral boardSize-1) (fromIntegral boardSize-1)
-                            # starPoints (cSize / (3.0 * fromInteger boardSize)) (starPointLocations boardSize)
-                            # placeGreenCircles ((cSize / fromInteger boardSize) * 1.2) last5Locations last5Scores
-                            # placeWhiteStones (cSize / fromInteger boardSize) whitePoints
-                            # placeBlackStones (cSize / fromInteger boardSize) blackPoints
+                            # placeDiagramOnGrid (starPoint (cSize / (3.0 * fromInteger boardSize))) (starPointLocations boardSize)
+                            # placeGreenCircles (stoneSize * 1.2) last5Locations last5Scores
+                            # placeDiagramOnGrid (whiteStone stoneSize) whitePoints
+                            # placeDiagramOnGrid (blackStone stoneSize)  blackPoints
 
         boardDiagram = foldl (\acc (color, x,y,n) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Moves
