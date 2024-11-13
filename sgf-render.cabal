@@ -22,12 +22,11 @@ library kifu
   exposed-modules:     Kifu, SgfReader, Goban, KataGoApi
   hs-source-dirs:      src
   build-depends:       base,
-                       sgf==0.1.3.2,
                        diagrams-core,
                        diagrams-lib,
                        diagrams-contrib,
                        diagrams-rasterific,
-                       containers,                      
+                       containers,
                        bytestring,
                        utf8-string,
                        mtl,
@@ -35,9 +34,7 @@ library kifu
                        http-conduit,
                        http-types,
                        aeson,
-
-
-
+                       sgf==0.1.3.2,
 
 executable sgf-render
     main-is:          Main.hs

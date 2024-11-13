@@ -19,7 +19,7 @@ import Diagrams (Renderable)
 import Diagrams.Prelude hiding (output)
 import Diagrams.Backend.Rasterific.CmdLine
 import KataGoApi (scoreAllMoves)
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (catMaybes, fromMaybe, mapMaybe)
 import Options.Applicative
   ( Alternative (empty),
     execParser,
@@ -48,7 +48,7 @@ mg c (SGF.Play (x,y)) = Just (mapColor c,x,y)
 mg c SGF.Pass = Nothing
 
 convertToMoves ::  [(SGF.Color, SGF.MoveGo)] -> [(GoStone, Integer, Integer, Integer)]
-convertToMoves mvs =  let onlyMoves = catMaybes $ map (\(c, m) -> mg c m) mvs
+convertToMoves mvs =  let onlyMoves = mapMaybe (uncurry mg) mvs
                           numberedMoves = zip onlyMoves [1..]
                        in map (\((s,x,y),n) -> (s,x,y,n)) numberedMoves
 
@@ -91,9 +91,10 @@ makeFileName :: String -> Integer -> String
 makeFileName prefix pageNumber = let pnum = printf "%05d" pageNumber
                                   in prefix ++ "-" ++ pnum ++ ".pdf"
 
+-- TODO get host from config
 getScore :: Bool -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
-getScore scoringRequested boardSize moves = if scoringRequested then 
-                                                scoreAllMoves "localhost" 2178 boardSize moves
+getScore scoringRequested boardSize moves = if scoringRequested then
+                                                scoreAllMoves "192.168.1.208" 8888 boardSize moves
                                             else return []
 
 
@@ -110,14 +111,14 @@ run renderOpts  = do
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
   scores <- getScore scoringRequested  boardSize $ last movestack
-  print scores  
+  print scores
 
-  let 
+  let
       numberedMoveList = zip [1..] movestack
       allKifus = map (\(i, moves) -> buildDiagram boardSize moves scores) numberedMoveList
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
- 
-   in do 
+
+   in do
          mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
 
 main :: IO ()

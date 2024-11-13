@@ -115,7 +115,7 @@ getScore host apiPort boardSize moves =
 
 moveList :: [i] -> [[i]]
 moveList is = let takelist = [1..length is]
-               in map (\n -> take n is) takelist
+               in map (`take` is) takelist
 
 scoreAllMoves :: String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
 scoreAllMoves host apiPort boardSize moves = mapM (getScore host apiPort boardSize) (moveList moves)
