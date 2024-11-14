@@ -98,11 +98,11 @@ getScore scoringRequested boardSize moves = if scoringRequested then
                                             else return []
 
 
-calculateMoveStrength :: [Double] -> [Double]
-calculateMoveStrength  pointEstimates = let first = head pointEstimates
-                                            moveWindow = divvy 2 1 pointEstimates
-                                            moveStrength = map (\(x:y:_) -> y-x ) moveWindow
-                                         in first : moveStrength
+-- calculateMoveStrength :: [Double] -> [Double]
+-- calculateMoveStrength  pointEstimates = let first = head pointEstimates
+--                                             moveWindow = divvy 2 1 pointEstimates
+--                                             moveStrength = map (\(x:y:_) -> y-x ) moveWindow
+--                                          in first : moveStrength
 
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
@@ -111,7 +111,6 @@ run renderOpts  = do
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
   scores <- getScore scoringRequested  boardSize $ last movestack
-  print scores
 
   let
       numberedMoveList = zip [1..] movestack

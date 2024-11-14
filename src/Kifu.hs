@@ -51,14 +51,14 @@ myGridOpts = GridOpts
         }
 
 placeGreenCircles' :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeGreenCircles' cSize locations scores = let goodMove = circle cSize # fc green  # opacity 1.0 # lw 0.1
+placeGreenCircles' cSize locations scores = let --goodMove = circle cSize # fc green  # opacity 1.0 # lw 0.1
                                                 badMove = circle cSize # fc red  # opacity 1.0 # lw 0.1
                                                 scoredMoves = zip scores locations
-                                                goodMoves = filter (\(s,m) -> s >= 2.0) scoredMoves
-                                                badMoves = filter (\(s,m) -> s < -2.0) scoredMoves
+                                                goodMoves = filter (\(s,m) -> s >= 1.0) scoredMoves
+                                                badMoves = filter (\(s,m) -> s <= -1.0) scoredMoves
                                                 goodLocations = map snd goodMoves
                                                 badLocations = map snd badMoves
-                                             in placeDiagramOnGrid goodMove goodLocations <> placeDiagramOnGrid badMove badLocations
+                                             in placeDiagramOnGrid badMove badLocations
 
 placeGreenCircles :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
 placeGreenCircles cSize locations scores = if null scores then id else placeGreenCircles' cSize locations scores

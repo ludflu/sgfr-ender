@@ -123,5 +123,8 @@ scoreAllMoves :: String -> Int -> Integer -> [(GoStone, Integer, Integer, Intege
 scoreAllMoves host apiPort boardSize moves = let scoreGetter = getScore host apiPort boardSize
                                               in do rawscores <- mapM scoreGetter (moveList moves)
                                                     let realscore = differences rawscores
-                                                    print realscore
+                                                        numbered =  zip [1..] realscore
+                                                        badmoves = filter (\(m,s) -> s < (-1.0)) numbered
+                                                    print "Bad moves:\n"
+                                                    print badmoves
                                                     return realscore
