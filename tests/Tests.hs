@@ -16,6 +16,7 @@ import Control.Monad.State
 import Diagrams (place, difference)
 import Test.Tasty.Providers (IsTest(run))
 import Codec.Binary.UTF8.Generic (UTF8Bytes(empty))
+import Text.Read.Lex (expect)
 
 main :: IO ()
 main = defaultMain allTests
@@ -48,38 +49,34 @@ pairStoneLiberties = do playBlack  5 5 $ Just 1
                         libertyCount (GoPoint 5 5)
 
 
--- dd x y | x < 0 =  x + y
---        | y < 0  = y + x
---        | otherwise = 0
-
 
 
 expectedMoveScores  = [0.5,0.5,1.0,-1.0,0,1.5,0]
 expectedScoreLeading = [0.0,0.0,1.0,-1.0,0,1.5,0]
 
 
-testScoring= [
-    0.878933,
-     -0.865271,
-    0.915535,
-    -0.815886,
-    1.06814,
-    -0.903092,
-    0.991379,
-    -0.706177,
-    0.837629,
-    -0.491861,
-    0.732971,
-    0.46562,
-    -0.312426,
-    0.311542,
-    -0.33484,
-    2.3672,
-    -1.65472,
-    7.69065,
-    -6.63804]
+testScoring= [ 0.927776
+    ,(-0.851789)
+    ,0.902863
+    ,(-0.775235)
+    ,1.08545
+    , (-0.896769)
+    , 1.03844
+    , (-0.728895)
+    , 0.840413
+    , (-0.472879)
+    , 0.732093
+    , 0.497133]
 
-scoreDiffs = take 18 $ differences testScoring
+-- x : number you want rounded, n : number of decimal places you want...
+truncate' :: Double -> Int -> Double
+truncate' x n = (fromIntegral (floor (x * t))) / t
+    where t = 10^n
+
+scoreDiffs = let scores = take 18 $ differences testScoring
+              in map (\x -> truncate' x 2) scores
+
+expectedScores = [0.92,7.0e-2,5.0e-2,0.12,0.31,0.18,0.14,0.3,0.11,0.36,0.25,1.22]
 
 atariStone :: State BoardState GoStone
 atariStone = do playBlack  5 5 $ Just 1
@@ -130,10 +127,7 @@ testCalcBoundary =
             evalState lowerLeft2 iboard @?= [(GoPoint 15 3, Black)],
 
         testCase "scoring the moves should give the correct results" $
-          scoreDiffs @?= []
+          scoreDiffs @?= expectedScores
 
-        -- testCase "rendering one stone play should get a diagram" $ do
-        --     r <- renderOneStone 
-        --     r @?= ()
             
     ]

@@ -54,8 +54,8 @@ placeGreenCircles' :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [n
 placeGreenCircles' cSize locations scores = let goodMove = circle cSize # fc green  # opacity 1.0 # lw 0.1
                                                 badMove = circle cSize # fc red  # opacity 1.0 # lw 0.1
                                                 scoredMoves = zip scores locations
-                                                goodMoves = filter (\(s,m) -> s >= 0.5) scoredMoves
-                                                badMoves = filter (\(s,m) -> s < 0.5) scoredMoves
+                                                goodMoves = filter (\(s,m) -> s >= 2.0) scoredMoves
+                                                badMoves = filter (\(s,m) -> s < -2.0) scoredMoves
                                                 goodLocations = map snd goodMoves
                                                 badLocations = map snd badMoves
                                              in placeDiagramOnGrid goodMove goodLocations <> placeDiagramOnGrid badMove badLocations
