@@ -11,7 +11,7 @@ import Goban
       findDragon,
       libertyCount,
       playBlack,
-      playWhite, getAllStones )
+      playWhite, getAllStones, differences )
 import Control.Monad.State
 import Diagrams (place, difference)
 import Test.Tasty.Providers (IsTest(run))
@@ -52,13 +52,10 @@ pairStoneLiberties = do playBlack  5 5 $ Just 1
 --        | y < 0  = y + x
 --        | otherwise = 0
 
-differences :: [Double] -> [Double]
-differences [] = []
-differences [_] = []
-differences (x:y:xs) =  (x + y) : differences (y:xs)
 
 
-
+expectedMoveScores  = [0.5,0.5,1.0,-1.0,0,1.5,0]
+expectedScoreLeading = [0.0,0.0,1.0,-1.0,0,1.5,0]
 
 
 testScoring= [
