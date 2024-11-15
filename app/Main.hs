@@ -79,8 +79,8 @@ renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
 renderDiagrams outfile [a,b,c] = renderDiagram outfile $ fourUp a b c mempty
 renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
-buildDiagram :: Integer  ->  [(GoStone, Integer, Integer, Integer)] -> [Double] ->Diagram B
-buildDiagram boardSize moves scores = let
+buildDiagram :: Integer  ->  [Double] -> [(GoStone, Integer, Integer, Integer)]  ->Diagram B
+buildDiagram boardSize scores moves = let
       initialGoban = emptyBoard boardSize
       finalBoard = execState (playMoves moves) initialGoban
       gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
@@ -105,13 +105,11 @@ run renderOpts  = do
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
   scores <- getScore scoringRequested  boardSize $ last movestack
-  print scores
-
+  let kifuBuilder =  buildDiagram boardSize scores
+  print $ filter (< -1.0) scores
   let
-      numberedMoveList = zip [1..] movestack
-      allKifus = map (\(i, moves) -> buildDiagram boardSize moves scores) numberedMoveList
+      allKifus = map kifuBuilder movestack
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
-
    in do
          mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
 

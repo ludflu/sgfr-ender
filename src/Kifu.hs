@@ -54,7 +54,7 @@ markMoves' :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [D
 markMoves' cSize locations scores = let 
                                                 badMoveMarker = circle cSize # fc red  # opacity 0.5 # lw 0.1
                                                 scoredMoves = zip scores locations
-                                                badMoves = filter (\(s,m) -> s <= -1.0) scoredMoves
+                                                badMoves = filter (\(s,m) -> s < (-1.0)) scoredMoves
                                                 badLocations = map snd badMoves
                                              in placeDiagramOnGrid badMoveMarker badLocations
 
