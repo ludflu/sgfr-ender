@@ -6,7 +6,7 @@
 
 module Main where
 
-import Kifu                        (kifu, twoUp, fourUp)
+import Kifu                        (makeKifu, twoUp, fourUp)
 import RenderOpts
 import Diagrams.Backend.Rasterific (B, renderPdf, renderPdfBSWithDPI)
 import Diagrams.TwoD (dims2D)
@@ -31,9 +31,11 @@ import Options.Applicative
     (<**>),
   )
 import Data.List.Split (chunksOf, divvy)
-import Data.List ( tails )
+import Data.List ( tails, sortBy, sortOn )
 import Control.Arrow hiding ((|||))
 import Text.Printf (printf)
+import Data.Ord (comparing, Down (Down))
+
 mapColor :: SGF.Color -> GoStone
 mapColor SGF.Black = Black
 mapColor SGF.White = White
@@ -79,12 +81,20 @@ renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
 renderDiagrams outfile [a,b,c] = renderDiagram outfile $ fourUp a b c mempty
 renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
-buildDiagram :: Integer  ->  [Double] -> [(GoStone, Integer, Integer, Integer)]  ->Diagram B
-buildDiagram boardSize scores moves = let
+
+findBadMoves :: Double -> [(GoStone, Integer, Integer, Integer)] -> [Double] ->  [(GoStone, Integer, Integer, Integer)]
+findBadMoves threshold moves scores = let orderedMoves = sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
+                                          scoredOrderedMoves = zip orderedMoves (reverse scores)
+                                          onlyBad = filter (\(move,score) -> score < threshold) scoredOrderedMoves
+                                       in map fst onlyBad
+
+
+buildDiagram :: Integer  ->  [Double] -> [(GoStone, Integer, Integer, Integer)] -> [(GoStone, Integer, Integer, Integer)]  ->Diagram B
+buildDiagram boardSize scores badmoves moves  = let
       initialGoban = emptyBoard boardSize
       finalBoard = execState (playMoves moves) initialGoban
       gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
-   in kifu gostones boardSize scores
+   in makeKifu gostones badmoves boardSize scores
 
 
 makeFileName :: String -> Integer -> String
@@ -105,13 +115,14 @@ run renderOpts  = do
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
   scores <- getScore scoringRequested  boardSize $ last movestack
-  let kifuBuilder =  buildDiagram boardSize scores
-  print  scores
+  let badmoves = findBadMoves (-1.0) (last movestack) scores
+      kifuBuilder = buildDiagram boardSize scores badmoves
+  print badmoves
   let
       allKifus = map kifuBuilder movestack
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
    in do
-         mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
+         mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu ) chunkedKifus
 
 main :: IO ()
 main = run =<< execParser opts
