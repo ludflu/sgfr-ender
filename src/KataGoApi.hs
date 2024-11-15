@@ -40,7 +40,7 @@ import Network.HTTP.Conduit
   )
 import Network.HTTP.Simple (getResponseBody, httpJSON, httpLBS, setRequestBodyJSON, setRequestHeaders, setRequestMethod, setRequestPort, setRequestResponseTimeout)
 import Network.HTTP.Types
-import Goban (BoardState(board), GoStone)
+import Goban (BoardState(board), GoStone, differences)
 import Kifu (boardLetters)
 import qualified Data.Map as M
 
@@ -107,7 +107,6 @@ getScore host apiPort boardSize moves =
 
         rsp <- httpLBS request
         let d = parseScore $ getResponseBody rsp
-        print d
         case d of
           Left err -> liftIO $ print ("Error parsing result from katago API: " ++ err) >> return 0.0
           Right dur -> return dur
@@ -115,7 +114,14 @@ getScore host apiPort boardSize moves =
 
 moveList :: [i] -> [[i]]
 moveList is = let takelist = [1..length is]
-               in map (\n -> take n is) takelist
+               in map (`take` is) takelist
+
+
 
 scoreAllMoves :: String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
-scoreAllMoves host apiPort boardSize moves = mapM (getScore host apiPort boardSize) (moveList moves)
+scoreAllMoves host apiPort boardSize moves = let scoreGetter = getScore host apiPort boardSize
+                                              in do rawscores <- mapM scoreGetter (moveList moves)
+                                                    let realscore = differences rawscores
+                                                        numbered =  zip [1..] realscore
+                                                        badmoves = filter (\(m,s) -> s < (-1.0)) numbered
+                                                    return realscore

@@ -151,3 +151,20 @@ playMoves = mapM_ (\(s, x, y, moveNumber) -> playStone s (GoPoint x y) (Just mov
 getAllStones :: BoardState -> [(GoPoint, GoStone)]
 getAllStones boardState = let boardMap = board boardState
                            in  filter (\ (p,s) -> s /= Empty ) (M.toList boardMap)
+
+
+takeLengthOf :: [a] -> [b] -> [b]
+takeLengthOf = zipWith (flip const)
+
+windows :: Int -> [a] -> [[a]]
+windows n xs = takeLengthOf (drop (n-1) xs) (windows' n xs)
+
+windows' :: Int -> [a] -> [[a]]
+windows' n = map (take n) . tails
+
+diffs :: [Double] -> [Double]
+diffs scores = let w = windows 2 scores
+                in map sum w
+
+differences :: [Double] -> [Double]
+differences xs = diffs (0:xs)

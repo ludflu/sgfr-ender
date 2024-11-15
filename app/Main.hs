@@ -6,7 +6,7 @@
 
 module Main where
 
-import Kifu                        (kifu, twoUp, fourUp)
+import Kifu                        (makeKifu, twoUp, fourUp)
 import RenderOpts
 import Diagrams.Backend.Rasterific (B, renderPdf, renderPdfBSWithDPI)
 import Diagrams.TwoD (dims2D)
@@ -19,7 +19,7 @@ import Diagrams (Renderable)
 import Diagrams.Prelude hiding (output)
 import Diagrams.Backend.Rasterific.CmdLine
 import KataGoApi (scoreAllMoves)
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (catMaybes, fromMaybe, mapMaybe)
 import Options.Applicative
   ( Alternative (empty),
     execParser,
@@ -31,9 +31,11 @@ import Options.Applicative
     (<**>),
   )
 import Data.List.Split (chunksOf, divvy)
-import Data.List ( tails )
-import Control.Arrow hiding ((|||))
+import Data.List ( tails, sortBy, sortOn )
+import Control.Arrow ( (>>>) )
 import Text.Printf (printf)
+import Data.Ord (comparing, Down (Down))
+
 mapColor :: SGF.Color -> GoStone
 mapColor SGF.Black = Black
 mapColor SGF.White = White
@@ -48,7 +50,7 @@ mg c (SGF.Play (x,y)) = Just (mapColor c,x,y)
 mg c SGF.Pass = Nothing
 
 convertToMoves ::  [(SGF.Color, SGF.MoveGo)] -> [(GoStone, Integer, Integer, Integer)]
-convertToMoves mvs =  let onlyMoves = catMaybes $ map (\(c, m) -> mg c m) mvs
+convertToMoves mvs =  let onlyMoves = mapMaybe (uncurry mg) mvs
                           numberedMoves = zip onlyMoves [1..]
                        in map (\((s,x,y),n) -> (s,x,y,n)) numberedMoves
 
@@ -79,29 +81,32 @@ renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
 renderDiagrams outfile [a,b,c] = renderDiagram outfile $ fourUp a b c mempty
 renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
 
-buildDiagram :: Integer  ->  [(GoStone, Integer, Integer, Integer)] -> [Double] ->Diagram B
-buildDiagram boardSize moves scores = let
+
+findBadMoves :: Double -> [(GoStone, Integer, Integer, Integer)] -> [Double] ->  [(GoStone, Integer, Integer, Integer)]
+findBadMoves threshold moves scores = let orderedMoves = sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
+                                          scoredOrderedMoves = zip orderedMoves (reverse scores)
+                                          onlyBad = filter (\(move,score) -> score < threshold) scoredOrderedMoves
+                                       in map fst onlyBad
+
+
+buildDiagram :: Integer  ->  [Double] -> [(GoStone, Integer, Integer, Integer)] -> [(GoStone, Integer, Integer, Integer)]  ->Diagram B
+buildDiagram boardSize scores badmoves moves  = let
       initialGoban = emptyBoard boardSize
       finalBoard = execState (playMoves moves) initialGoban
       gostones = stonePlacement (getAllStones finalBoard) (moveNumberMap finalBoard)
-   in kifu gostones boardSize scores
+   in makeKifu gostones badmoves boardSize scores
 
 
 makeFileName :: String -> Integer -> String
 makeFileName prefix pageNumber = let pnum = printf "%05d" pageNumber
                                   in prefix ++ "-" ++ pnum ++ ".pdf"
 
+-- TODO get host from config
 getScore :: Bool -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
-getScore scoringRequested boardSize moves = if scoringRequested then 
-                                                scoreAllMoves "localhost" 2178 boardSize moves
+getScore scoringRequested boardSize moves = if scoringRequested then
+                                                scoreAllMoves "192.168.1.208" 8888 boardSize moves
                                             else return []
 
-
-calculateMoveStrength :: [Double] -> [Double]
-calculateMoveStrength  pointEstimates = let first = head pointEstimates
-                                            moveWindow = divvy 2 1 pointEstimates
-                                            moveStrength = map (\(x:y:_) -> y-x ) moveWindow
-                                         in first : moveStrength
 
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
@@ -110,15 +115,12 @@ run renderOpts  = do
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
   scores <- getScore scoringRequested  boardSize $ last movestack
-  print scores  
-
-  let 
-      numberedMoveList = zip [1..] movestack
-      allKifus = map (\(i, moves) -> buildDiagram boardSize moves scores) numberedMoveList
+  let badmoves = findBadMoves (-1.0) (last movestack) scores
+      kifuBuilder = buildDiagram boardSize scores badmoves
+      allKifus = map kifuBuilder movestack
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
- 
-   in do 
-         mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu) chunkedKifus
+   in do
+         mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu ) chunkedKifus
 
 main :: IO ()
 main = run =<< execParser opts
