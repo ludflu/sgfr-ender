@@ -50,18 +50,16 @@ myGridOpts = GridOpts
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-placeGreenCircles' :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeGreenCircles' cSize locations scores = let --goodMove = circle cSize # fc green  # opacity 1.0 # lw 0.1
-                                                badMove = circle cSize # fc red  # opacity 1.0 # lw 0.1
+markMoves' :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+markMoves' cSize locations scores = let 
+                                                badMoveMarker = circle cSize # fc red  # opacity 0.5 # lw 0.1
                                                 scoredMoves = zip scores locations
-                                                goodMoves = filter (\(s,m) -> s >= 1.0) scoredMoves
                                                 badMoves = filter (\(s,m) -> s <= -1.0) scoredMoves
-                                                goodLocations = map snd goodMoves
                                                 badLocations = map snd badMoves
-                                             in placeDiagramOnGrid badMove badLocations
+                                             in placeDiagramOnGrid badMoveMarker badLocations
 
-placeGreenCircles :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-placeGreenCircles cSize locations scores = if null scores then id else placeGreenCircles' cSize locations scores
+markMoves :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+markMoves cSize locations scores = if null scores then id else markMoves' cSize locations scores
 
 blackStone cSize  = circle cSize # fc black # opacity 1.0 # lw 0.1
 whiteStone cSize  = circle cSize  # fc white # opacity 1.0 # lw 1.0
@@ -128,9 +126,9 @@ kifu moves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
         stoneSize = cSize / fromInteger boardSize
         bd = gridWithHalves' myGridOpts  (fromIntegral boardSize-1) (fromIntegral boardSize-1)
                             # placeDiagramOnGrid (starPoint (cSize / (3.0 * fromInteger boardSize))) (starPointLocations boardSize)
-                            # placeGreenCircles (stoneSize * 1.2) last5Locations last5Scores
                             # placeDiagramOnGrid (whiteStone stoneSize) whitePoints
                             # placeDiagramOnGrid (blackStone stoneSize)  blackPoints
+                            # markMoves (stoneSize * 1.2) last5Locations last5Scores
 
         boardDiagram = foldl (\acc (color, x,y,n) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Moves

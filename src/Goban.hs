@@ -162,13 +162,9 @@ windows n xs = takeLengthOf (drop (n-1) xs) (windows' n xs)
 windows' :: Int -> [a] -> [[a]]
 windows' n = map (take n) . tails
 
-calcMove :: Double -> Double -> Double
-calcMove old new | old <0 && new > 0 = old + new
-
 diffs :: [Double] -> [Double]
 diffs scores = let w = windows 2 scores
-                in map (\[x,y] -> y + x)  w
-
+                in map sum w
 
 differences :: [Double] -> [Double]
 differences xs = diffs (0:xs)

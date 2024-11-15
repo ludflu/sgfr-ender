@@ -107,7 +107,6 @@ getScore host apiPort boardSize moves =
 
         rsp <- httpLBS request
         let d = parseScore $ getResponseBody rsp
-        print d
         case d of
           Left err -> liftIO $ print ("Error parsing result from katago API: " ++ err) >> return 0.0
           Right dur -> return dur
@@ -125,6 +124,4 @@ scoreAllMoves host apiPort boardSize moves = let scoreGetter = getScore host api
                                                     let realscore = differences rawscores
                                                         numbered =  zip [1..] realscore
                                                         badmoves = filter (\(m,s) -> s < (-1.0)) numbered
-                                                    print "Bad moves:\n"
-                                                    print badmoves
                                                     return realscore
