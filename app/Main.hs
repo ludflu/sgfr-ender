@@ -32,7 +32,7 @@ import Options.Applicative
   )
 import Data.List.Split (chunksOf, divvy)
 import Data.List ( tails, sortBy, sortOn )
-import Control.Arrow hiding ((|||))
+import Control.Arrow ( (>>>) )
 import Text.Printf (printf)
 import Data.Ord (comparing, Down (Down))
 
@@ -117,8 +117,6 @@ run renderOpts  = do
   scores <- getScore scoringRequested  boardSize $ last movestack
   let badmoves = findBadMoves (-1.0) (last movestack) scores
       kifuBuilder = buildDiagram boardSize scores badmoves
-  print badmoves
-  let
       allKifus = map kifuBuilder movestack
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
    in do

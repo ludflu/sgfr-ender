@@ -6,11 +6,11 @@
 
 module Kifu where
 import Diagrams.TwoD.Grid ( gridWithHalves, gridWithHalves', placeDiagramOnGrid, GridOpts (..), annotate )
-import           Diagrams.TwoD.Text
-import           Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
+import Diagrams.TwoD.Text ( fontSize, text )
+import Diagrams.Prelude   (Any, Diagram, Path, QDiagram, Renderable,
                                      V2, circle, fc,  lw, none, opacity, red, black, white, yellow,
                                      (#), (===), (|||), rect, centerXY, square, atop, Default (def), thin, r2, named, IsName, local, Colour, hcat', (.~), (&), padX, alignB, green, fcA, )
-import           Diagrams.Backend.Rasterific (B, renderPdf)
+import Diagrams.Backend.Rasterific (B, renderPdf)
 
 import qualified Data.SGF  as SGF
 import Data.List (sortBy, sortOn)
