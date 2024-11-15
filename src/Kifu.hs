@@ -18,6 +18,9 @@ import Data.Ord (comparing, Down (Down))
 import Goban (GoStone(Black, White))
 import Diagrams (with, sep, vcat', alignL, pad)
 
+import qualified Data.Set as Set
+import qualified Diagrams.BoundingBox as Set
+
 cSize :: Double
 cSize = 0.45
 
@@ -50,16 +53,10 @@ myGridOpts = GridOpts
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-markMoves' :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-markMoves' cSize locations scores = let
-                                                badMoveMarker = circle cSize # fc red  # opacity 0.5 # lw 0.1
-                                                scoredMoves = zip scores locations
-                                                badMoves = filter (\(s,m) -> s < -2.0) scoredMoves
-                                                badLocations = map snd badMoves
-                                             in placeDiagramOnGrid badMoveMarker badLocations
+markMoves :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm]   -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
+markMoves cSize locations  = let badMoveMarker = circle cSize # fc red  # opacity 0.5 # lw 0.1
+                               in placeDiagramOnGrid badMoveMarker locations
 
-markMoves :: (IsName nm, Renderable (Path V2 Double) b) => Double -> [nm] -> [Double] -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-markMoves cSize locations scores = if null scores then id else markMoves' cSize locations scores
 
 blackStone cSize  = circle cSize # fc black # opacity 1.0 # lw 0.1
 whiteStone cSize  = circle cSize  # fc white # opacity 1.0 # lw 1.0
@@ -111,24 +108,30 @@ starPointLocations boardSize
 
 
 makeKifu ::  [(GoStone, Integer, Integer, Integer)] -> [(GoStone, Integer, Integer, Integer)]  -> Integer -> [Double] -> QDiagram B V2 Double Any
-makeKifu moves badMoves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
+makeKifu allMoves badMoves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
     where
-        blackMoves = filter isBlack moves
-        whiteMoves = filter isWhite moves
+        blackMoves = filter isBlack allMoves
+        whiteMoves = filter isWhite allMoves
         blackPoints = map transformMovetoBoard blackMoves
         whitePoints = map transformMovetoBoard whiteMoves
 
+        badMoveNumbers = Set.fromList $ map (\(_,_,_,moveNumber) -> moveNumber) badMoves
+
 
         -- -- list the moves in reverse order
-        orderedMoves = sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
-        last5Moves = take 5  orderedMoves
+        orderedMoves = sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) allMoves
+        last5Moves = take 5 orderedMoves
+
+        last5BadMoves = filter (\(_,_,_,bla) -> Set.member bla badMoveNumbers) last5Moves
+        last5BadLocations = map transformMovetoBoard last5BadMoves
+
         stoneSize = cSize / fromInteger boardSize
 
         bd = gridWithHalves' myGridOpts  (fromIntegral boardSize-1) (fromIntegral boardSize-1)
                             # placeDiagramOnGrid (starPoint (cSize / (3.0 * fromInteger boardSize))) (starPointLocations boardSize)
                             # placeDiagramOnGrid (whiteStone stoneSize) whitePoints
                             # placeDiagramOnGrid (blackStone stoneSize)  blackPoints
-                        --     # markMoves (stoneSize * 1.2) last5Locations last5Scores
+                            # markMoves (stoneSize * 1.2) last5BadLocations
 
         boardDiagram = foldl (\acc (color, x,y,n) -> let (x',y') = tfm x y
                                                         in acc # ann x' y' (flipColor color) (show n) ) bd last5Moves
