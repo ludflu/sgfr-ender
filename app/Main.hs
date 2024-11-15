@@ -106,7 +106,7 @@ run renderOpts  = do
       movestack = process sgf
   scores <- getScore scoringRequested  boardSize $ last movestack
   let kifuBuilder =  buildDiagram boardSize scores
-  print $ filter (< -1.0) scores
+  print  scores
   let
       allKifus = map kifuBuilder movestack
       chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus

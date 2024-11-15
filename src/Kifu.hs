@@ -118,9 +118,13 @@ kifu moves boardSize scores = centerXY labeledXBoard <> centerXY woodenBoard
         blackPoints = map transformMovetoBoard blackMoves
         whitePoints = map transformMovetoBoard whiteMoves
 
-        last5 = take 5 $ sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
-        last5Scores = take 5 $ reverse scores
-        last5Moves = map (\(stone,x,y,nbr) -> (stone, x,y,nbr)) last5
+        orderedMoves = sortOn (Data.Ord.Down . (\(_,_,_,x) -> x)) moves
+        scoredOrderedMoves = zip orderedMoves scores
+        last5 = take 5  scoredOrderedMoves
+
+        last5Moves = map (\((stone,x,y,nbr),score) -> (stone, x,y,nbr)) last5
+        last5Scores =  map (\((stone,x,y,nbr),score) -> score) last5
+
         last5Locations = map (\(stone, x,y,nbr) -> tfm x y) last5Moves
 
         stoneSize = cSize / fromInteger boardSize
