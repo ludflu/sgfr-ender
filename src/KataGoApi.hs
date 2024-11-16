@@ -109,6 +109,7 @@ getScore host apiPort boardSize moves =
                 $ request'
 
         rsp <- httpLBS request
+        print rsp
         let d = parseScore $ getResponseBody rsp
         case d of
           Left err -> liftIO $ print ("Error parsing result from katago API: " ++ err) >> return 0.0

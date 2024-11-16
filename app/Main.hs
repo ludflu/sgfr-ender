@@ -6,6 +6,8 @@
 
 module Main where
 
+import Debug.Trace
+
 import Kifu                        (makeKifu, twoUp, fourUp)
 import RenderOpts
 import Diagrams.Backend.Rasterific (B, renderPdf, renderPdfBSWithDPI)
@@ -76,10 +78,10 @@ renderDiagram outfile d =  let centeredD = d # centerXY # pad 1.1
                             in renderPdf widthInPixels heightInPixels outfile (dims2D diagramSize diagramSize) centeredD
 
 renderDiagrams :: FilePath -> [Diagram B] -> IO ()
-renderDiagrams outfile [kifu] = renderDiagram outfile kifu
-renderDiagrams outfile [a,b] = renderDiagram outfile $ twoUp a b
-renderDiagrams outfile [a,b,c] = renderDiagram outfile $ fourUp a b c mempty
-renderDiagrams outfile [a,b,c,d] = renderDiagram outfile $ fourUp a b c d
+renderDiagrams outfile [kifu] = Debug.Trace.trace "Rendering 1 pdf" renderDiagram outfile kifu
+renderDiagrams outfile [a,b] = Debug.Trace.trace "Rendering 2 pdf" renderDiagram outfile $ twoUp a b
+renderDiagrams outfile [a,b,c] = Debug.Trace.trace "Rendering 3 pdf" renderDiagram outfile $ fourUp a b c mempty
+renderDiagrams outfile [a,b,c,d] = Debug.Trace.trace "Rendering 4 pdf" renderDiagram outfile $ fourUp a b c d
 
 
 findBadMoves :: Double -> [(GoStone, Integer, Integer, Integer)] -> [Double] ->  [(GoStone, Integer, Integer, Integer)]
@@ -99,7 +101,8 @@ buildDiagram boardSize scores badmoves moves  = let
 
 makeFileName :: String -> Integer -> String
 makeFileName prefix pageNumber = let pnum = printf "%05d" pageNumber
-                                  in prefix ++ "-" ++ pnum ++ ".pdf"
+                                     fname = prefix ++ "-" ++ pnum ++ ".pdf"
+                                  in Debug.Trace.trace (show fname) fname
 
 getScore :: Bool -> String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
 getScore scoringRequested host port boardSize moves = if scoringRequested then
@@ -109,17 +112,29 @@ getScore scoringRequested host port boardSize moves = if scoringRequested then
 
 run :: RenderOpts  -> IO ()
 run renderOpts  = do
+  print "Reading input sgf file\n"
   (boardSize,sgf) <- readSgf (input renderOpts)
   let scoringRequested = scoreEstimate renderOpts
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
+  print "getting scores\n"
   scores <- getScore scoringRequested  (host renderOpts) (port renderOpts) boardSize $ last movestack
-  let badmoves = findBadMoves (-1.0) (last movestack) scores
-      kifuBuilder = buildDiagram boardSize scores badmoves
+  print "rendering\n"
+
+  let badmoves = if scoringRequested 
+                 then findBadMoves (-1.0) (last movestack) scores 
+                 else []
+      kifuBuilder = buildDiagram boardSize [] badmoves
+      outpath = output renderOpts
+      dPerPage = diagramsPerPage renderOpts
       allKifus = map kifuBuilder movestack
-      chunkedKifus = zip [1..] $ chunksOf (diagramsPerPage renderOpts) allKifus
+      chunked = chunksOf dPerPage allKifus
+      chunkedNumberedKifus = zip [1..] chunked
+
    in do
-         mapM_ (\(i, kifu) -> renderDiagrams (makeFileName (output renderOpts) i) kifu ) chunkedKifus
+         let s = Debug.Trace.trace "chunked kifus" length chunkedNumberedKifus
+         print $ "Rendering " ++ show s ++ " pages"
+         mapM_ (\(i, kifu) -> Debug.Trace.trace ("kifu index " ++ show i) renderDiagrams (makeFileName outpath i) kifu ) chunkedNumberedKifus
 
 main :: IO ()
 main = run =<< execParser opts
