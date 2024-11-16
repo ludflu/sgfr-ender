@@ -28,6 +28,15 @@ import qualified Data.HashMap.Strict as HashMap
 import Control.Monad
 import qualified System.IO.Streams as Streams
 import System.Environment
+import Data.IntMap.Merge.Lazy (merge)
+import System.IO.Streams (makeOutputStream)
+import System.IO.Streams.Core (OutputStream)
+import Data.ByteString (ByteString)
+
+
+import System.IO (IOMode(..), withFile)
+import System.IO.Streams (OutputStream)
+import qualified System.IO.Streams as Streams
 
 data AppState = AppState {
   stNextFree :: Int,
@@ -53,10 +62,14 @@ putPageRef :: IORef AppState -> Ref -> IO ()
 putPageRef stateRef ref =
   modifyIORef stateRef $ \st -> st {stPageRefs = ref : stPageRefs st}
 
-mergePdf :: IO ()
-mergePdf = do
-  files <- getArgs
-  writer <- makeWriter Streams.stdout
+makeOutput :: FilePath -> IO (OutputStream ByteString)
+makeOutput filePath =
+    withFile filePath WriteMode Streams.handleToOutputStream
+
+mergePdf :: FilePath -> [FilePath] -> IO ()
+mergePdf outfile files = do
+  outstream <- makeOutput outfile
+  writer <- makeWriter outstream
   writeHeader writer
   deleteObject writer (R 0 65535) 0
   stateRef <- newIORef initialAppState
