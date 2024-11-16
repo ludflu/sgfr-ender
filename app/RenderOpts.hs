@@ -11,7 +11,8 @@ data RenderOpts = RenderOpts {
     output :: FilePath,
     host:: String,
     port :: Int,
-    scoreEstimate :: Bool
+    scoreEstimate :: Bool,
+    alternatePlays :: Bool
 } deriving (Show)
 
 -- Define the custom parser
@@ -59,5 +60,9 @@ parseOpts = RenderOpts <$>
       ( long "score-estimate"
           <> short 's'
           <> help "Whether to estimate the score of the game using KataGo")
+    <*> switch
+      ( long "alternate-plays"
+          <> short 'a'
+          <> help "Whether to alternate lines of play using KataGo")
       
 

@@ -93,6 +93,9 @@ translateMoves boardSize = let bp = makeBoardPoint boardSize
                            in map (\(color, x,y, movenumber) -> bp x y)
 
 
+getMoves :: String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [(GoStone, Integer, Integer, Integer)]
+getMoves host apiPort boardSize moves = return []
+
 getScore :: String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO Double
 getScore host apiPort boardSize moves =
   let boardMoves = translateMoves boardSize moves
