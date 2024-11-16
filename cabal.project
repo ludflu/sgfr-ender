@@ -1,5 +1,0 @@
-packages: .
-          ../sgf
-
-constraints:
-    base >=4.16.4.0

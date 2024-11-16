@@ -34,14 +34,14 @@ library kifu
                        http-conduit,
                        http-types,
                        aeson,
-                       sgf==0.1.3.2,
+                       sgf==0.1.3.3,
 
 executable sgf-render
     main-is:          Main.hs
     other-modules:    RenderOpts
     build-depends:    base,
                       kifu,
-                      sgf==0.1.3.2,
+                      sgf==0.1.3.3,
                       bytestring,
                       diagrams-rasterific,
                       diagrams-core,
@@ -64,7 +64,7 @@ test-suite sgf-tests
       src
   main-is: Tests.hs
   build-depends: base,
-                 sgf==0.1.3.2,
+                 sgf==0.1.3.3,
                  diagrams-lib,
                  diagrams-contrib,
                  tasty,
