@@ -113,7 +113,7 @@ run renderOpts  = do
   let scoringRequested = scoreEstimate renderOpts
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
-  scores <- getScore scoringRequested  (host renderOpts) 8888 boardSize $ last movestack
+  scores <- getScore scoringRequested  (host renderOpts) (port renderOpts) boardSize $ last movestack
   let badmoves = findBadMoves (-1.0) (last movestack) scores
       kifuBuilder = buildDiagram boardSize scores badmoves
       allKifus = map kifuBuilder movestack

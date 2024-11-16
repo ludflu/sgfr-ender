@@ -10,6 +10,7 @@ data RenderOpts = RenderOpts {
     input ::  FilePath,
     output :: FilePath,
     host:: String,
+    port :: Int,
     scoreEstimate :: Bool
 } deriving (Show)
 
@@ -49,6 +50,11 @@ parseOpts = RenderOpts <$>
         <> short 'h'
         <> metavar "host" 
         <> help "katago host")
+    <*> option auto (long "port" 
+           <> metavar "port" 
+           <> showDefault
+           <> value 8888
+           <> help "katago port")
     <*> switch
       ( long "score-estimate"
           <> short 's'
