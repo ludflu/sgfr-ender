@@ -9,6 +9,7 @@ data RenderOpts = RenderOpts {
     diagramsPerPage :: Int,
     input ::  FilePath,
     output :: FilePath,
+    host:: String,
     scoreEstimate :: Bool
 } deriving (Show)
 
@@ -44,6 +45,10 @@ parseOpts = RenderOpts <$>
         <> short 'o'
         <> metavar "OUTPUT" 
         <> help "output file pattern")
+    <*> strOption ( long "host" 
+        <> short 'h'
+        <> metavar "host" 
+        <> help "katago host")
     <*> switch
       ( long "score-estimate"
           <> short 's'

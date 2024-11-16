@@ -101,10 +101,9 @@ makeFileName :: String -> Integer -> String
 makeFileName prefix pageNumber = let pnum = printf "%05d" pageNumber
                                   in prefix ++ "-" ++ pnum ++ ".pdf"
 
--- TODO get host from config
-getScore :: Bool -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
-getScore scoringRequested boardSize moves = if scoringRequested then
-                                                scoreAllMoves "192.168.1.208" 8888 boardSize moves
+getScore :: Bool -> String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO [Double]
+getScore scoringRequested host port boardSize moves = if scoringRequested then
+                                                scoreAllMoves host port boardSize moves
                                             else return []
 
 
@@ -114,7 +113,7 @@ run renderOpts  = do
   let scoringRequested = scoreEstimate renderOpts
   let process = convertToMoves >>> graduatedMoveList (movesPerDiagram renderOpts)
       movestack = process sgf
-  scores <- getScore scoringRequested  boardSize $ last movestack
+  scores <- getScore scoringRequested  (host renderOpts) 8888 boardSize $ last movestack
   let badmoves = findBadMoves (-1.0) (last movestack) scores
       kifuBuilder = buildDiagram boardSize scores badmoves
       allKifus = map kifuBuilder movestack
