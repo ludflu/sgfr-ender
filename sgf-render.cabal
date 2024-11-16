@@ -19,13 +19,15 @@ common common-options
   ghc-options: -Wall -fno-warn-noncanonical-monad-instances
 
 library kifu
-  exposed-modules:     Kifu, SgfReader, Goban, KataGoApi
+  exposed-modules:     Kifu, SgfReader, Goban, KataGoApi, ScoreLeaderLineChart
   hs-source-dirs:      src
   build-depends:       base,
                        diagrams-core,
                        diagrams-lib,
                        diagrams-contrib,
                        diagrams-rasterific,
+                       diagrams-svg,
+                       SVGFonts,
                        containers,
                        bytestring,
                        utf8-string,
