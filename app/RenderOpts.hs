@@ -49,6 +49,7 @@ parseOpts = RenderOpts <$>
     <*> strOption ( long "host" 
         <> short 'h'
         <> metavar "host" 
+        <> value "localhost"
         <> help "katago host")
     <*> option auto (long "port" 
            <> metavar "port" 

@@ -12,7 +12,7 @@
 
 module MergePdf
 (
-  mergePdf,
+  mergePdfs,
 )
 where
 
@@ -66,8 +66,8 @@ makeOutput :: FilePath -> IO (OutputStream ByteString)
 makeOutput filePath =
     withFile filePath WriteMode Streams.handleToOutputStream
 
-mergePdf :: FilePath -> [FilePath] -> IO ()
-mergePdf outfile files = do
+mergePdfs :: FilePath -> [FilePath] -> IO ()
+mergePdfs outfile files = do
   outstream <- makeOutput outfile
   writer <- makeWriter outstream
   writeHeader writer
