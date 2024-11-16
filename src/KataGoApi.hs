@@ -48,7 +48,10 @@ import qualified Data.Map as M
 data KataGoRequest = KataGoRequest
   {
     board_size :: Integer,
-    moves::[String]
+    moves::[String],
+    rules::String,
+    ownership :: Bool,
+    komi :: Double
   }
   deriving (Generic, Show)
 
@@ -93,7 +96,7 @@ translateMoves boardSize = let bp = makeBoardPoint boardSize
 getScore :: String -> Int -> Integer -> [(GoStone, Integer, Integer, Integer)] -> IO Double
 getScore host apiPort boardSize moves =
   let boardMoves = translateMoves boardSize moves
-      payload = KataGoRequest {board_size=boardSize, moves=boardMoves}
+      payload = KataGoRequest {board_size=boardSize, moves=boardMoves, ownership=False, rules="japanese", komi=7.5}
       url = "http://" ++ host ++ "/score/katago_gtp_bot"
    in do
         request' <- parseRequest url
