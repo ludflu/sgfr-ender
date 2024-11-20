@@ -19,6 +19,7 @@ import Diagrams (Renderable)
 import Diagrams.Prelude hiding (output)
 import Diagrams.Backend.Rasterific.CmdLine
 import KataGoApi (scoreAllMoves)
+import MergePdf (mergePdfs)
 import Data.Maybe (catMaybes, fromMaybe, mapMaybe)
 import Options.Applicative
   ( Alternative (empty),
